@@ -24,10 +24,10 @@ class AdaptiveIdentityWorkflow:
     Multi-agent workflow using LangGraph
     """
 
-    def __init__(self, openai_api_key: str):
+    def __init__(self, gemini_api_key: str):
         # Initialize all agents
         self.analytics_agent = AnalyticsAgent()
-        self.identity_agent = IdentityInterpretationAgent(api_key=openai_api_key)
+        self.identity_agent = IdentityInterpretationAgent(api_key=gemini_api_key)
         self.decision_agent = DecisionAgent(variants_db=DEMO_VARIANTS)
         self.guardrail_agent = GuardrailAgent()
 
@@ -141,8 +141,8 @@ if __name__ == "__main__":
         session.add_event(event)
 
     # Initialize workflow
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    workflow = AdaptiveIdentityWorkflow(openai_api_key=api_key)
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    workflow = AdaptiveIdentityWorkflow(gemini_api_key=api_key)
 
     # Process session through multi-agent system
     print("=" * 80)

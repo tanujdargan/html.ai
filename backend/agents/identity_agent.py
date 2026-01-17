@@ -3,8 +3,8 @@ Identity Interpretation Agent - Interprets behavioral vector into semantic ident
 """
 from typing import Dict, Any
 from models.events import UserSession, BehavioralVector, IdentityState
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
 import json
 
 
@@ -15,10 +15,10 @@ class IdentityInterpretationAgent:
 
     def __init__(self, api_key: str):
         self.name = "Identity Interpretation Agent"
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash",
             temperature=0.3,
-            api_key=api_key
+            google_api_key=api_key
         )
 
         self.prompt = ChatPromptTemplate.from_messages([

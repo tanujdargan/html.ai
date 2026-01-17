@@ -17,7 +17,99 @@
   const CONFIG = {
     apiBaseUrl: 'http://localhost:8000',  // Change in production
     sessionKey: 'adaptive_identity_session',
+    userIdCookie: 'adaptive_identity_uid',
+    cookieMaxAgeDays: 365,  // 1 year persistence
     debugMode: true  // Set to false in production
+  };
+
+  // ============================================================================
+  // Cookie Utilities
+  // ============================================================================
+
+  const CookieUtils = {
+    /**
+     * Set a cookie with optional expiration
+     */
+    set(name, value, days = CONFIG.cookieMaxAgeDays) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = `expires=${date.toUTCString()}`;
+      document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+    },
+
+    /**
+     * Get a cookie value by name
+     */
+    get(name) {
+      const nameEQ = `${name}=`;
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.indexOf(nameEQ) === 0) {
+          return cookie.substring(nameEQ.length);
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Delete a cookie
+     */
+    delete(name) {
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    }
+  };
+
+  // ============================================================================
+  // User ID Management
+  // ============================================================================
+
+  const UserIdManager = {
+    /**
+     * Generate a UUID v4
+     */
+    generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    },
+
+    /**
+     * Get or create a persistent user ID stored in cookies
+     */
+    getOrCreateUserId() {
+      let userId = CookieUtils.get(CONFIG.userIdCookie);
+
+      if (!userId) {
+        userId = this.generateUUID();
+        CookieUtils.set(CONFIG.userIdCookie, userId);
+
+        if (CONFIG.debugMode) {
+          console.log('[Adaptive Identity] New user ID generated:', userId);
+        }
+      } else if (CONFIG.debugMode) {
+        console.log('[Adaptive Identity] Existing user ID found:', userId);
+      }
+
+      return userId;
+    },
+
+    /**
+     * Get the current user ID (without creating new one)
+     */
+    getUserId() {
+      return CookieUtils.get(CONFIG.userIdCookie);
+    },
+
+    /**
+     * Reset the user ID (creates a new one)
+     */
+    resetUserId() {
+      CookieUtils.delete(CONFIG.userIdCookie);
+      return this.getOrCreateUserId();
+    }
   };
 
   // ============================================================================
@@ -26,8 +118,8 @@
 
   class SessionManager {
     constructor() {
+      this.userId = UserIdManager.getOrCreateUserId();  // Get persistent user ID from cookie
       this.sessionId = this.getOrCreateSession();
-      this.userId = null;
     }
 
     getOrCreateSession() {
@@ -51,11 +143,15 @@
       try {
         const response = await fetch(`${CONFIG.apiBaseUrl}/api/session/create`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            user_id: this.userId
+          })
         });
 
         if (CONFIG.debugMode) {
-          console.log('[Adaptive Identity] Session created:', sessionId);
+          console.log('[Adaptive Identity] Session created:', sessionId, 'for user:', this.userId);
         }
       } catch (error) {
         console.error('[Adaptive Identity] Failed to create session:', error);
@@ -64,6 +160,17 @@
 
     setUserId(userId) {
       this.userId = userId;
+      // Also update the cookie
+      CookieUtils.set(CONFIG.userIdCookie, userId);
+    }
+
+    getUserId() {
+      return this.userId;
+    }
+
+    resetUserId() {
+      this.userId = UserIdManager.resetUserId();
+      return this.userId;
     }
   }
 
@@ -358,6 +465,27 @@
      */
     identify(userId) {
       this.sessionManager.setUserId(userId);
+    }
+
+    /**
+     * Get the current persistent user ID (from cookie)
+     */
+    getUserId() {
+      return this.sessionManager.getUserId();
+    }
+
+    /**
+     * Get the current session ID
+     */
+    getSessionId() {
+      return this.sessionManager.sessionId;
+    }
+
+    /**
+     * Reset user ID (generates a new one)
+     */
+    resetUserId() {
+      return this.sessionManager.resetUserId();
     }
   }
 
