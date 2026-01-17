@@ -38,8 +38,8 @@ app.add_middleware(
 )
 
 # Initialize workflow
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-workflow = AdaptiveIdentityWorkflow(openai_api_key=OPENAI_API_KEY)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+workflow = AdaptiveIdentityWorkflow(gemini_api_key=GEMINI_API_KEY)
 
 # In-memory session store (in production, use Redis/Supabase)
 sessions: Dict[str, Dict[str, Any]] = {}
@@ -65,6 +65,13 @@ class VariantRequest(BaseModel):
     user_id: Optional[str] = None
 
 
+class SessionCreateRequest(BaseModel):
+    """Request to create a new session"""
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    language: str = "en"
+
+
 class VariantResponse(BaseModel):
     """Response with selected variant"""
     variant_id: str
@@ -72,6 +79,14 @@ class VariantResponse(BaseModel):
     identity_state: Optional[str] = None
     confidence: float = 0.0
     audit_log: List[str] = []
+
+
+class RewardRequest(BaseModel):
+    """Reward tracking request"""
+    session_id: str
+    component_id: str
+    reward_type: str  # "conversion" or "engagement"
+    properties: Dict[str, Any] = {}
 
 
 # ============================================================================
@@ -90,17 +105,26 @@ def root():
 
 
 @app.post("/api/session/create")
-def create_session(language: str = "en") -> Dict[str, str]:
+def create_session(request: SessionCreateRequest = None) -> Dict[str, str]:
     """
     Create a new user session
 
+    Accepts:
+        session_id: Optional client-provided session ID
+        user_id: Optional persistent user ID from cookie
+        language: Language preference (default: "en")
+
     Returns:
-        session_id for tracking
+        session_id and user_id for tracking
     """
-    session_id = str(uuid.uuid4())
+    # Use provided session_id or generate new one
+    session_id = request.session_id if request and request.session_id else str(uuid.uuid4())
+    user_id = request.user_id if request else None
+    language = request.language if request else "en"
 
     session = UserSession(
         session_id=session_id,
+        user_id=user_id,
         language=language
     )
 
@@ -108,6 +132,7 @@ def create_session(language: str = "en") -> Dict[str, str]:
 
     return {
         "session_id": session_id,
+        "user_id": user_id,
         "created_at": datetime.utcnow().isoformat()
     }
 
@@ -205,6 +230,53 @@ def get_variant(request: VariantRequest):
     )
 
 
+@app.post("/api/rewards/track")
+def track_reward(request: RewardRequest):
+    """
+    Track reward signals from frontend (conversions, engagement)
+
+    Gets feedback from user interactions to improve variant selection
+    """
+    session_id = request.session_id
+
+    # Get or create session
+    if session_id not in sessions:
+        session = UserSession(session_id=session_id)
+        sessions[session_id] = session.model_dump()
+
+    session_data = sessions[session_id]
+    session = UserSession(**session_data)
+
+    # Track the reward event
+    reward_event = Event(
+        event_name=EventType.CONVERSION_COMPLETED if request.reward_type == "conversion" else EventType.CLICK,
+        session_id=session_id,
+        component_id=request.component_id,
+        properties={
+            **request.properties,
+            "reward_type": request.reward_type,
+            "is_reward_signal": True
+        },
+        timestamp=datetime.utcnow()
+    )
+
+    session.add_event(reward_event)
+
+    # Update session
+    sessions[session_id] = session.model_dump()
+
+    # Log for debugging
+    variant_id = request.properties.get("variant_id", "unknown")
+    print(f"[REWARD] {request.reward_type.upper()} tracked for variant {variant_id}")
+
+    return {
+        "status": "reward_tracked",
+        "reward_type": request.reward_type,
+        "session_id": session_id,
+        "component_id": request.component_id
+    }
+
+
 @app.get("/api/session/{session_id}")
 def get_session(session_id: str):
     """
@@ -220,12 +292,39 @@ def get_session(session_id: str):
 
     return {
         "session_id": session.session_id,
+        "user_id": session.user_id,
         "identity_state": session.identity_state.value if session.identity_state else None,
         "confidence": session.identity_confidence,
         "behavioral_vector": session.behavioral_vector.to_dict() if session.behavioral_vector else None,
         "events_count": len(session.event_history),
         "last_variant": session.last_variant_shown,
         "audit_log": session.audit_log
+    }
+
+
+@app.get("/api/user/{user_id}/sessions")
+def get_user_sessions(user_id: str):
+    """
+    Get all sessions for a specific user ID (from cookie)
+
+    Useful for tracking user behavior across multiple sessions
+    """
+    user_sessions = []
+    for session_id, session_data in sessions.items():
+        if session_data.get("user_id") == user_id:
+            session = UserSession(**session_data)
+            user_sessions.append({
+                "session_id": session.session_id,
+                "identity_state": session.identity_state.value if session.identity_state else None,
+                "confidence": session.identity_confidence,
+                "events_count": len(session.event_history),
+                "last_variant": session.last_variant_shown
+            })
+
+    return {
+        "user_id": user_id,
+        "session_count": len(user_sessions),
+        "sessions": user_sessions
     }
 
 
