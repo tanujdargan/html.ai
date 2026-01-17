@@ -212,120 +212,151 @@ async def reward_tag(payload: RewardPayload):
 
 
 # ----------------------------------------
-# Analytics Dashboard Endpoint
+# Dashboard API Endpoints
 # ----------------------------------------
-@app.get("/api/analytics/dashboard")
-async def get_analytics_dashboard():
+@app.get("/")
+def root():
+    """Health check"""
+    return {
+        "status": "running",
+        "service": "html.ai - A/B Testing Engine",
+        "version": "1.0.0",
+        "mongodb": "connected" if client else "disconnected"
+    }
+
+
+@app.get("/api/users/all")
+async def get_all_users():
     """
-    Dashboard endpoint - shows variant performance and system status
+    Get all users with their session data for dashboard
     """
     try:
-        # Get basic counts
-        total_users = mongodb["users"].count_documents({})
-        total_events = mongodb.get_collection("events", create=True) if "events" in mongodb.list_collection_names() else None
-        total_variants = mongodb.get_collection("variants", create=True) if "variants" in mongodb.list_collection_names() else None
+        users = list(users_collection.find({}))
         
-        total_events_count = total_events.count_documents({}) if total_events else 0
-        total_variants_count = total_variants.count_documents({}) if total_variants else 0
+        # Get events and rewards (if collections exist)
+        events = list(mongodb["events"].find({})) if "events" in mongodb.list_collection_names() else []
+        rewards = list(mongodb["rewards"].find({})) if "rewards" in mongodb.list_collection_names() else []
         
-        # Get variant stats (if available)
-        variant_stats = []
-        identity_distribution = {}
-        
-        if total_variants:
-            try:
-                # Aggregate variant performance
-                pipeline = [
-                    {
-                        "$group": {
-                            "_id": {
-                                "variant_id": "$variant_id",
-                                "identity_state": "$identity_state"
-                            },
-                            "total_shown": {"$sum": 1},
-                            "conversions": {
-                                "$sum": {"$cond": ["$converted", 1, 0]}
-                            }
-                        }
-                    }
-                ]
-                
-                results = list(total_variants.aggregate(pipeline))
-                
-                for result in results:
-                    total = result["total_shown"]
-                    conversions = result["conversions"]
-                    conversion_rate = conversions / total if total > 0 else 0.0
-                    
-                    variant_stats.append({
-                        "variant_id": result["_id"]["variant_id"],
-                        "identity_state": result["_id"]["identity_state"],
-                        "total_shown": total,
-                        "conversions": conversions,
-                        "conversion_rate": conversion_rate
-                    })
-                    
-                    # Track identity distribution
-                    identity = result["_id"]["identity_state"]
-                    if identity:
-                        identity_distribution[identity] = identity_distribution.get(identity, 0) + total
-            except Exception as e:
-                print(f"[Dashboard] Error aggregating variants: {e}")
-        
-        # Check if multi-agent system is available
-        multi_agent_enabled = workflow is not None and AGENTS_AVAILABLE
+        # Convert MongoDB _id to string
+        for user in users:
+            user["_id"] = str(user["_id"])
+        for event in events:
+            event["_id"] = str(event["_id"])
+        for reward in rewards:
+            reward["_id"] = str(reward["_id"])
         
         return {
-            "status": "ok",
-            "total_users": total_users,
-            "total_events": total_events_count,
-            "total_variants": total_variants_count,
-            "multi_agent_enabled": multi_agent_enabled,
-            "variant_stats": variant_stats,
-            "identity_distribution": identity_distribution,
-            "timestamp": datetime.utcnow().isoformat()
+            "users": users,
+            "events": events,
+            "rewards": rewards,
+            "total_users": len(users),
+            "total_events": len(events),
+            "total_rewards": len(rewards)
         }
-        
     except Exception as e:
-        print(f"[Dashboard] Error: {e}")
+        print(f"Error fetching users: {e}")
         return {
-            "status": "error",
-            "message": str(e),
+            "users": [],
+            "events": [],
+            "rewards": [],
             "total_users": 0,
             "total_events": 0,
-            "total_variants": 0,
-            "multi_agent_enabled": False
+            "total_rewards": 0,
+            "error": str(e)
         }
 
 
-@app.get("/api/analytics/recent-logs")
-async def get_recent_logs():
+@app.get("/api/user/{user_id}/journey")
+async def get_user_journey(user_id: str):
     """
-    Get recent agent communication logs
+    Get detailed journey for a specific user
+    Shows all events, variants shown, and behavioral data
     """
     try:
-        # Get recent sessions with audit logs
-        recent_users = list(mongodb["users"].find().sort("_id", -1).limit(10))
+        user = users_collection.find_one({"user_id": user_id})
         
-        logs = []
-        for user in recent_users:
-            if "last_session" in user and "audit_log" in user["last_session"]:
-                audit_log = user["last_session"]["audit_log"]
-                for entry in audit_log:
-                    # Parse agent log entries
-                    if ":" in entry:
-                        agent, message = entry.split(":", 1)
-                        logs.append({
-                            "timestamp": user.get("last_updated", datetime.utcnow()).isoformat() if "last_updated" in user else datetime.utcnow().isoformat(),
-                            "agent": agent.strip(),
-                            "message": message.strip()
-                        })
+        if not user:
+            return {
+                "error": "User not found",
+                "user_id": user_id
+            }
         
-        return logs[:50]  # Return last 50 log entries
+        # Get user events if collection exists
+        events = []
+        if "events" in mongodb.list_collection_names():
+            events = list(mongodb["events"].find({"user_id": user_id}).sort("timestamp", -1))
+            for event in events:
+                event["_id"] = str(event["_id"])
         
+        # Get user rewards if collection exists
+        rewards = []
+        if "rewards" in mongodb.list_collection_names():
+            rewards = list(mongodb["rewards"].find({"user_id": user_id}).sort("timestamp", -1))
+            for reward in rewards:
+                reward["_id"] = str(reward["_id"])
+        
+        # Convert _id
+        user["_id"] = str(user["_id"])
+        
+        return {
+            "user_id": user_id,
+            "user": user,
+            "session": user.get("last_session", {}),
+            "events": events,
+            "rewards": rewards,
+            "identity_evolution": user.get("identity_state"),
+            "behavioral_vector": user.get("behavioral_vector", {})
+        }
     except Exception as e:
-        print(f"[Recent Logs] Error: {e}")
-        return []
+        print(f"Error fetching user journey: {e}")
+        return {
+            "error": str(e),
+            "user_id": user_id
+        }
+
+
+@app.get("/api/analytics/dashboard")
+async def get_dashboard_analytics():
+    """
+    Get aggregated analytics for the dashboard
+    """
+    try:
+        users = list(users_collection.find({}))
+        
+        # Count active sessions
+        active_sessions = sum(1 for u in users if u.get("last_session"))
+        
+        # Get variant statistics
+        variant_a_users = sum(1 for u in users if u.get("variants", {}).get("A"))
+        variant_b_users = sum(1 for u in users if u.get("variants", {}).get("B"))
+        
+        # Calculate average scores
+        a_scores = [u.get("variants", {}).get("A", {}).get("current_score", 0) for u in users if u.get("variants", {}).get("A")]
+        b_scores = [u.get("variants", {}).get("B", {}).get("current_score", 0) for u in users if u.get("variants", {}).get("B")]
+        
+        avg_a_score = sum(a_scores) / len(a_scores) if a_scores else 0
+        avg_b_score = sum(b_scores) / len(b_scores) if b_scores else 0
+        
+        return {
+            "total_users": len(users),
+            "active_sessions": active_sessions,
+            "variant_a": {
+                "users": variant_a_users,
+                "avg_score": round(avg_a_score, 2)
+            },
+            "variant_b": {
+                "users": variant_b_users,
+                "avg_score": round(avg_b_score, 2)
+            },
+            "winner": "A" if avg_a_score > avg_b_score else "B" if avg_b_score > avg_a_score else "Tie"
+        }
+    except Exception as e:
+        print(f"Error fetching analytics: {e}")
+        return {
+            "error": str(e),
+            "total_users": 0,
+            "active_sessions": 0
+        }
 
 
 # ----------------------------------------
