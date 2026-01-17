@@ -270,7 +270,7 @@ async def get_all_users():
 async def get_user_journey(user_id: str):
     """
     Get detailed journey for a specific user
-    Shows all events, variants shown, and behavioral data
+    Shows variants A/B with history and scores
     """
     try:
         user = users_collection.find_one({"user_id": user_id})
@@ -281,31 +281,39 @@ async def get_user_journey(user_id: str):
                 "user_id": user_id
             }
         
-        # Get user events if collection exists
-        events = []
-        if "events" in mongodb.list_collection_names():
-            events = list(mongodb["events"].find({"user_id": user_id}).sort("timestamp", -1))
-            for event in events:
-                event["_id"] = str(event["_id"])
-        
-        # Get user rewards if collection exists
-        rewards = []
-        if "rewards" in mongodb.list_collection_names():
-            rewards = list(mongodb["rewards"].find({"user_id": user_id}).sort("timestamp", -1))
-            for reward in rewards:
-                reward["_id"] = str(reward["_id"])
-        
         # Convert _id
         user["_id"] = str(user["_id"])
+        
+        # Extract variants
+        variants = user.get("variants", {})
+        variant_a = variants.get("A", {})
+        variant_b = variants.get("B", {})
+        
+        # Build events from variant history
+        events = []
+        for variant_name in ["A", "B"]:
+            variant = variants.get(variant_name, {})
+            history = variant.get("history", [])
+            for item in history:
+                events.append({
+                    "event_name": f"variant_{variant_name}_updated",
+                    "variant": variant_name,
+                    "html": item.get("html", ""),
+                    "score": item.get("score", 0),
+                    "timestamp": item.get("timestamp", "")
+                })
+        
+        # Sort events by timestamp
+        events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
         
         return {
             "user_id": user_id,
             "user": user,
-            "session": user.get("last_session", {}),
+            "variants": variants,
+            "variant_a": variant_a,
+            "variant_b": variant_b,
             "events": events,
-            "rewards": rewards,
-            "identity_evolution": user.get("identity_state"),
-            "behavioral_vector": user.get("behavioral_vector", {})
+            "current_winner": "A" if variant_a.get("current_score", 0) > variant_b.get("current_score", 0) else "B"
         }
     except Exception as e:
         print(f"Error fetching user journey: {e}")

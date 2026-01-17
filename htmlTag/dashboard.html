@@ -593,20 +593,39 @@
 
         function updateStats(data) {
             const users = data.users || [];
-            const events = data.events || [];
-            const rewards = data.rewards || [];
+
+            // Calculate variant scores
+            let totalScoreA = 0;
+            let totalScoreB = 0;
+            let countA = 0;
+            let countB = 0;
+
+            users.forEach(user => {
+                const variants = user.variants || {};
+                if (variants.A && variants.A.current_score) {
+                    totalScoreA += variants.A.current_score;
+                    countA++;
+                }
+                if (variants.B && variants.B.current_score) {
+                    totalScoreB += variants.B.current_score;
+                    countB++;
+                }
+            });
+
+            const avgScoreA = countA > 0 ? totalScoreA / countA : 0;
+            const avgScoreB = countB > 0 ? totalScoreB / countB : 0;
 
             document.getElementById('total-users').textContent = users.length;
-            document.getElementById('active-sessions').textContent = users.filter(u => u.last_session).length;
-            document.getElementById('total-events').textContent = events.length;
-            document.getElementById('total-rewards').textContent = rewards.length;
-
-            // Calculate variant scores from rewards
-            const variantAScore = rewards.filter(r => r.variant === 'A').length;
-            const variantBScore = rewards.filter(r => r.variant === 'B').length;
-            
-            document.getElementById('variant-a-score').textContent = variantAScore;
-            document.getElementById('variant-b-score').textContent = variantBScore;
+            document.getElementById('active-sessions').textContent = users.length;
+            document.getElementById('total-events').textContent = users.reduce((sum, u) => {
+                const variants = u.variants || {};
+                const historyA = (variants.A?.history || []).length;
+                const historyB = (variants.B?.history || []).length;
+                return sum + historyA + historyB;
+            }, 0);
+            document.getElementById('total-rewards').textContent = '-';
+            document.getElementById('variant-a-score').textContent = avgScoreA.toFixed(2);
+            document.getElementById('variant-b-score').textContent = avgScoreB.toFixed(2);
         }
 
         function renderUsersTable(users) {
@@ -626,30 +645,33 @@
                     <thead>
                         <tr>
                             <th>User ID (Cookie)</th>
-                            <th>Sessions</th>
-                            <th>Events</th>
-                            <th>Current Variant</th>
-                            <th>Status</th>
-                            <th>Last Seen</th>
+                            <th>Variant A Score</th>
+                            <th>Variant B Score</th>
+                            <th>Winner</th>
+                            <th>A History</th>
+                            <th>B History</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${users.map(user => {
-                            const session = user.last_session || {};
-                            const events = session.event_history || [];
-                            const variant = user.current_variant || 'A';
-                            const isActive = session.session_id ? true : false;
-                            const lastSeen = user.last_updated || user.created_at || 'N/A';
+                            const variants = user.variants || {};
+                            const variantA = variants.A || {};
+                            const variantB = variants.B || {};
+                            const scoreA = variantA.current_score || 0;
+                            const scoreB = variantB.current_score || 0;
+                            const winner = scoreA > scoreB ? 'A' : (scoreB > scoreA ? 'B' : 'Tie');
+                            const historyA = (variantA.history || []).length;
+                            const historyB = (variantB.history || []).length;
                             
                             return `
                                 <tr onclick="openUserDetail('${user.user_id}')">
                                     <td><span class="user-id">${user.user_id}</span></td>
-                                    <td>${user.session_count || 1}</td>
-                                    <td><span class="event-count">${events.length}</span></td>
-                                    <td><span class="badge badge-variant-${variant.toLowerCase()}"}>Variant ${variant}</span></td>
-                                    <td><span class="badge ${isActive ? 'badge-active' : 'badge-inactive'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                                    <td>${formatDate(lastSeen)}</td>
+                                    <td><span class="event-count">${scoreA.toFixed(1)}</span></td>
+                                    <td><span class="event-count">${scoreB.toFixed(1)}</span></td>
+                                    <td><span class="badge badge-variant-${winner.toLowerCase()}">${winner}</span></td>
+                                    <td>${historyA} versions</td>
+                                    <td>${historyB} versions</td>
                                     <td>
                                         <button class="refresh-btn" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); openUserDetail('${user.user_id}')">
                                             View Details
@@ -690,10 +712,9 @@
         }
 
         function renderUserDetail(data) {
-            const user = data.user || {};
-            const session = data.session || {};
+            const variantA = data.variant_a || {};
+            const variantB = data.variant_b || {};
             const events = data.events || [];
-            const behavioralVector = session.behavioral_vector || {};
 
             let html = `
                 <div class="detail-grid">
@@ -702,71 +723,84 @@
                         <div class="detail-value" style="font-size: 14px; font-family: 'Courier New', monospace;">${data.user_id}</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Session ID</div>
-                        <div class="detail-value" style="font-size: 14px; font-family: 'Courier New', monospace;">${session.session_id || 'N/A'}</div>
+                        <div class="detail-label">Current Winner</div>
+                        <div class="detail-value">${data.current_winner || 'Tie'}</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Identity State</div>
-                        <div class="detail-value">${session.identity_state || 'Unknown'}</div>
+                        <div class="detail-label">Variant A Score</div>
+                        <div class="detail-value">${(variantA.current_score || 0).toFixed(2)}</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Confidence</div>
-                        <div class="detail-value">${session.identity_confidence ? (session.identity_confidence * 100).toFixed(1) + '%' : 'N/A'}</div>
+                        <div class="detail-label">Variant B Score</div>
+                        <div class="detail-value">${(variantB.current_score || 0).toFixed(2)}</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Total Events</div>
-                        <div class="detail-value">${events.length}</div>
+                        <div class="detail-label">A Version History</div>
+                        <div class="detail-value">${(variantA.history || []).length} versions</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Last Variant</div>
-                        <div class="detail-value">${session.last_variant_shown || 'None'}</div>
+                        <div class="detail-label">B Version History</div>
+                        <div class="detail-value">${(variantB.history || []).length} versions</div>
                     </div>
                 </div>
             `;
 
-            // Behavioral Vector
-            if (behavioralVector && Object.keys(behavioralVector).length > 0) {
+            // Score comparison chart
+            const maxScore = Math.max(variantA.current_score || 0, variantB.current_score || 0, 1);
+            const percentA = ((variantA.current_score || 0) / maxScore) * 100;
+            const percentB = ((variantB.current_score || 0) / maxScore) * 100;
+
+            html += `
+                <h3 style="font-size: 18px; margin-top: 32px; margin-bottom: 16px;">Score Comparison</h3>
+                <div class="behavioral-vector">
+                    <div class="vector-item">
+                        <div class="vector-label">Variant A</div>
+                        <div class="vector-bar">
+                            <div class="vector-bar-fill" style="width: ${percentA}%; background: linear-gradient(90deg, #0d47a1, #1976d2);">
+                                ${(variantA.current_score || 0).toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vector-item">
+                        <div class="vector-label">Variant B</div>
+                        <div class="vector-bar">
+                            <div class="vector-bar-fill" style="width: ${percentB}%; background: linear-gradient(90deg, #4a148c, #6a1b9a);">
+                                ${(variantB.current_score || 0).toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Current HTML Preview
+            html += `
+                <h3 style="font-size: 18px; margin-top: 32px; margin-bottom: 16px;">Current Variants</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="preview-container">
+                        <div class="preview-header">Variant A (Current)</div>
+                        <iframe class="preview-frame" style="height: 200px;" srcdoc="${escapeHtml(variantA.current_html || '<div>No HTML</div>')}"></iframe>
+                    </div>
+                    <div class="preview-container">
+                        <div class="preview-header">Variant B (Current)</div>
+                        <iframe class="preview-frame" style="height: 200px;" srcdoc="${escapeHtml(variantB.current_html || '<div>No HTML</div>')}"></iframe>
+                    </div>
+                </div>
+            `;
+
+            // Version History Timeline
+            if (events.length > 0) {
                 html += `
-                    <h3 style="font-size: 18px; margin-bottom: 16px;">Behavioral Vector</h3>
-                    <div class="behavioral-vector">
-                        ${Object.entries(behavioralVector).map(([key, value]) => `
-                            <div class="vector-item">
-                                <div class="vector-label">${formatVectorName(key)}</div>
-                                <div class="vector-bar">
-                                    <div class="vector-bar-fill" style="width: ${value * 100}%">
-                                        ${(value * 100).toFixed(1)}%
-                                    </div>
+                    <h3 style="font-size: 18px; margin-top: 32px; margin-bottom: 16px;">Version History (Last 10)</h3>
+                    <div class="events-timeline">
+                        ${events.slice(0, 10).map(event => `
+                            <div class="timeline-item" style="border-left: 4px solid ${event.variant === 'A' ? '#0d47a1' : '#4a148c'};">
+                                <div class="timeline-time">${formatDate(event.timestamp)}</div>
+                                <div class="timeline-event">Variant ${event.variant} updated - Score: ${event.score.toFixed(2)}</div>
+                                <div class="timeline-props" style="margin-top: 8px; max-height: 100px; overflow: auto; background: white; padding: 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px;">
+                                    ${escapeHtml(event.html).substring(0, 200)}${event.html.length > 200 ? '...' : ''}
                                 </div>
                             </div>
                         `).join('')}
-                    </div>
-                `;
-            }
-
-            // Events Timeline
-            if (events.length > 0) {
-                html += `
-                    <h3 style="font-size: 18px; margin-top: 32px; margin-bottom: 16px;">Event Timeline</h3>
-                    <div class="events-timeline">
-                        ${events.slice(-10).reverse().map(event => `
-                            <div class="timeline-item">
-                                <div class="timeline-time">${formatDate(event.timestamp)}</div>
-                                <div class="timeline-event">${event.event_name}</div>
-                                ${event.properties && Object.keys(event.properties).length > 0 ? 
-                                    `<div class="timeline-props">${JSON.stringify(event.properties, null, 2)}</div>` 
-                                    : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-
-            // HTML Preview (if available)
-            if (user.last_html) {
-                html += `
-                    <div class="preview-container">
-                        <div class="preview-header">Rendered HTML Preview (Amplitude-style)</div>
-                        <iframe class="preview-frame" srcdoc="${escapeHtml(user.last_html)}"></iframe>
                     </div>
                 `;
             }
