@@ -345,6 +345,89 @@ def get_user_sessions(user_id: str):
     }
 
 
+# ============================================================================
+# Simple Optimize Endpoint (for htmlTag SDK)
+# ============================================================================
+
+class OptimizeRequest(BaseModel):
+    """Request to optimize HTML content"""
+    experiment: str
+    html: str
+    user_id: Optional[str] = None
+
+
+class OptimizeResponse(BaseModel):
+    """Response with optimized HTML"""
+    experiment: str
+    html: str
+    updated: bool = False
+
+
+# Store for experiment variants (in-memory)
+experiment_variants: Dict[str, str] = {}
+
+
+@app.post("/optimize", response_model=OptimizeResponse)
+def optimize_html(request: OptimizeRequest):
+    """
+    Check if there's an optimized variant for this experiment.
+    Returns the updated HTML if available, otherwise returns original.
+    """
+    experiment_id = request.experiment
+
+    # Check if we have an optimized variant
+    if experiment_id in experiment_variants:
+        return OptimizeResponse(
+            experiment=experiment_id,
+            html=experiment_variants[experiment_id],
+            updated=True
+        )
+
+    # No update, return original
+    return OptimizeResponse(
+        experiment=experiment_id,
+        html=request.html,
+        updated=False
+    )
+
+
+class SetVariantRequest(BaseModel):
+    """Request to set an optimized variant"""
+    experiment: str
+    html: str
+
+
+@app.post("/optimize/set")
+def set_optimized_variant(request: SetVariantRequest):
+    """
+    Set an optimized variant for an experiment (for testing/demo).
+    """
+    experiment_variants[request.experiment] = request.html
+    return {"status": "ok", "experiment": request.experiment}
+
+
+@app.get("/optimize/set-demo/{experiment}")
+def set_demo_variant(experiment: str):
+    """
+    Quick demo: set a pre-made optimized variant for testing.
+    """
+    demo_html = f'''<div class="box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h2>AI-Optimized Version!</h2>
+        <p>This content was updated by the backend for experiment: {experiment}</p>
+        <button style="background: white; color: #764ba2;">Take Action Now</button>
+    </div>'''
+    experiment_variants[experiment] = demo_html
+    return {"status": "ok", "experiment": experiment, "message": "Demo variant set! Check your page."}
+
+
+@app.get("/optimize/list")
+def list_experiments():
+    """
+    List all experiments with optimized variants.
+    """
+    return {"experiments": list(experiment_variants.keys())}
+
+
 @app.get("/api/demo/variants")
 def list_demo_variants():
     """
