@@ -1,0 +1,54 @@
+You’re building a tiny HTML wrapper / SDK that developers can drop into any webpage:
+
+<script src="https://cdn.adaptive-identity.ai/identity.js"></script>
+<div data-identity-component="hero" data-variants="3">
+   Original content
+</div>As soon as this loads:
+
+      1️⃣ Event Tracking (Behavioral Analytics Layer)
+
+      Your client SDK automatically tracks:
+      	•	component viewed
+      	•	time on component
+      	•	clicks
+      	•	scroll depth
+      	•	page viewed
+
+      It sends these events to your backend (MongoDB).
+
+      2️⃣ Multi-Agent Variant Selection (AI Personalization)
+
+      Your backend has AI “agents” working together:
+      	•	Pattern detector
+      	•	Conversion predictor
+      	•	Variant generator
+      	•	Identity classifier (user persona modelling)
+
+      These agents:
+      	•	Analyze the user’s behavior
+      	•	Look at historical performance
+      	•	Decide which variant gives the highest chance of conversion for this user
+3️⃣ SDK Rewrites the UI Dynamically
+
+Your JS engine reads that response and updates the DOM:
+	•	Replace hero text
+	•	Replace button CTA
+	•	Add urgency styling
+	•	Swap images (optional)
+
+4️⃣ Loop Continues → Self-Improving Product
+
+Users interact further → events flow back → AI agents improve → variant becomes smarter.
+
+🎯 Theme Fit: IDENTITY
+
+This is PERFECT for the theme:
+🧩 Amplitude Challenge Fit
+
+Amplitude wants:
+✔ behavioral events
+✔ AI that uses those events
+✔ system that changes UI based on data
+✔ product that gets smarter continuously
+
+Your project hits 100/100 for this challenge.

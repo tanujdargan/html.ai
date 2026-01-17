@@ -1,23 +1,23 @@
 class AiOptimizeElement extends HTMLElement {
     constructor() {
         super();
-        this.originalHTML = "";     // raw content inside the tag
-        this.componentId = "";      // <ai-optimize experiment="hero">
+        this.originalHTML = "";
+        this.componentId = "";
     }
 
     connectedCallback() {
         this.componentId = this.getAttribute("experiment");
         this.originalHTML = this.innerHTML.trim();
 
-        console.log("[AI-OPT] Mounted component:", this.componentId);
-        console.log("[AI-OPT] Original content:", this.originalHTML);
+        console.log("[AI-OPT] Mounted:", this.componentId);
+        console.log("[AI-OPT] Sending HTML to backend…");
 
-        this.requestVariant();
+        this.sendToBackend();
     }
 
-    async requestVariant() {
+    async sendToBackend() {
         try {
-            const res = await fetch(`http://localhost:3000/variant`, {
+            const res = await fetch("http://localhost:3000/log-html", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -27,25 +27,11 @@ class AiOptimizeElement extends HTMLElement {
             });
 
             const data = await res.json();
-
-            console.log("[AI-OPT] Received variant:", data);
-
-            this.applyVariant(data);
+            console.log("[AI-OPT] Backend responded:", data);
 
         } catch (err) {
-            console.error("[AI-OPT] Variant request failed — using fallback.", err);
+            console.error("[AI-OPT] Error sending HTML:", err);
         }
-    }
-
-    applyVariant(data) {
-        if (!data || !data.html) {
-            console.log("[AI-OPT] No variant returned. Keeping original.");
-            return;
-        }
-
-        this.innerHTML = data.html;
-
-        console.log("[AI-OPT] Updated DOM for", this.componentId);
     }
 }
 
