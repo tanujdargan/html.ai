@@ -44,6 +44,9 @@ workflow = AdaptiveIdentityWorkflow(gemini_api_key=GEMINI_API_KEY)
 # In-memory session store (in production, use Redis/Supabase)
 sessions: Dict[str, Dict[str, Any]] = {}
 
+# In-memory analytics store for variant performance
+variant_analytics: List[Dict[str, Any]] = []
+
 
 # ============================================================================
 # Request/Response Models
@@ -221,6 +224,20 @@ def get_variant(request: VariantRequest):
     # Get agent communication log
     audit_log = workflow.get_agent_communication_log(final_state)
 
+    # Record variant shown for analytics
+    variant_analytics.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "session_id": session_id,
+        "user_id": request.user_id,
+        "variant_id": selected_variant["variant_id"],
+        "component_id": request.component_id,
+        "identity_state": final_session.identity_state.value if final_session.identity_state else None,
+        "identity_confidence": final_session.identity_confidence,
+        "behavioral_vector": final_session.behavioral_vector.to_dict() if final_session.behavioral_vector else None,
+        "converted": False,  # Will be updated by rewards endpoint
+        "engagement_time": 0.0
+    })
+
     return VariantResponse(
         variant_id=selected_variant["variant_id"],
         content=selected_variant["content"],
@@ -349,6 +366,120 @@ def list_demo_variants():
             })
 
     return {"variants": variants_list}
+
+
+@app.post("/api/rewards/track")
+def track_reward(request: RewardRequest):
+    """
+    Track reward signals from frontend (conversions, engagement)
+
+    Gets feedback from user interactions to improve variant selection
+    """
+    session_id = request.session_id
+
+    # Get or create session
+    if session_id not in sessions:
+        session = UserSession(session_id=session_id)
+        sessions[session_id] = session.model_dump()
+
+    session_data = sessions[session_id]
+    session = UserSession(**session_data)
+
+    # Track the reward event
+    reward_event = Event(
+        event_name=EventType.CONVERSION_COMPLETED if request.reward_type == "conversion" else EventType.CLICK,
+        session_id=session_id,
+        component_id=request.component_id,
+        properties={
+            **request.properties,
+            "reward_type": request.reward_type,
+            "is_reward_signal": True
+        },
+        timestamp=datetime.utcnow()
+    )
+
+    session.add_event(reward_event)
+    sessions[session_id] = session.model_dump()
+
+    variant_id = request.properties.get("variant_id", "unknown")
+    print(f"[REWARD] {request.reward_type.upper()} tracked for variant {variant_id}")
+
+    # Update analytics when conversion/engagement happens
+    for record in variant_analytics:
+        if record["session_id"] == session_id and record["variant_id"] == variant_id:
+            if request.reward_type == "conversion":
+                record["converted"] = True
+                record["conversion_timestamp"] = datetime.utcnow().isoformat()
+            elif request.reward_type == "engagement":
+                record["engagement_time"] = request.properties.get("time_on_component", 0.0)
+            break
+
+    return {
+        "status": "reward_tracked",
+        "reward_type": request.reward_type,
+        "session_id": session_id,
+        "component_id": request.component_id,
+        "variant_id": variant_id
+    }
+
+
+@app.get("/api/analytics/dashboard")
+def get_analytics_dashboard():
+    """
+    Get aggregated analytics for dashboard
+    Shows variant performance, conversion rates, and identity distribution
+    """
+    # Calculate per-variant metrics
+    variant_stats = {}
+    identity_distribution = {}
+
+    for record in variant_analytics:
+        variant_id = record["variant_id"]
+        identity_state = record["identity_state"]
+
+        # Variant stats
+        if variant_id not in variant_stats:
+            variant_stats[variant_id] = {
+                "variant_id": variant_id,
+                "total_shown": 0,
+                "conversions": 0,
+                "total_engagement_time": 0.0,
+                "identity_breakdown": {}
+            }
+
+        variant_stats[variant_id]["total_shown"] += 1
+        if record.get("converted"):
+            variant_stats[variant_id]["conversions"] += 1
+        variant_stats[variant_id]["total_engagement_time"] += record.get("engagement_time", 0.0)
+
+        # Identity breakdown
+        if identity_state:
+            if identity_state not in variant_stats[variant_id]["identity_breakdown"]:
+                variant_stats[variant_id]["identity_breakdown"][identity_state] = 0
+            variant_stats[variant_id]["identity_breakdown"][identity_state] += 1
+
+            # Overall identity distribution
+            if identity_state not in identity_distribution:
+                identity_distribution[identity_state] = 0
+            identity_distribution[identity_state] += 1
+
+    # Calculate conversion rates
+    for variant_id, stats in variant_stats.items():
+        stats["conversion_rate"] = (
+            stats["conversions"] / stats["total_shown"]
+            if stats["total_shown"] > 0 else 0.0
+        )
+        stats["avg_engagement_time"] = (
+            stats["total_engagement_time"] / stats["total_shown"]
+            if stats["total_shown"] > 0 else 0.0
+        )
+
+    return {
+        "total_sessions": len(variant_analytics),
+        "variant_stats": list(variant_stats.values()),
+        "identity_distribution": identity_distribution,
+        "raw_analytics": variant_analytics
+    }
 
 
 # ============================================================================

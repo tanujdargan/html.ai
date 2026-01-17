@@ -115,9 +115,9 @@ DEMO_VARIANTS = {
             component_id="hero",
             variant_type="headline",
             content={
-                "headline": "Complete Your Purchase Today",
-                "subheadline": "Join thousands of satisfied customers",
-                "cta_text": "Buy Now",
+                "headline": "Premium Tech at Your Fingertips",
+                "subheadline": "Fast, reliable shipping on all orders",
+                "cta_text": "Shop Now",
                 "urgency": "high"
             },
             target_identity="confident",
@@ -128,9 +128,9 @@ DEMO_VARIANTS = {
             component_id="hero",
             variant_type="headline",
             content={
-                "headline": "Discover Our Collection",
-                "subheadline": "Find the perfect fit for your needs",
-                "cta_text": "Explore Products",
+                "headline": "Discover Premium Electronics",
+                "subheadline": "Browse our curated collection of the latest tech",
+                "cta_text": "Browse Collection",
                 "urgency": "low"
             },
             target_identity="exploratory",
@@ -141,9 +141,9 @@ DEMO_VARIANTS = {
             component_id="hero",
             variant_type="headline",
             content={
-                "headline": "We'll Help You Choose",
-                "subheadline": "Answer 3 quick questions to find your match",
-                "cta_text": "Get Started",
+                "headline": "Not Sure What You Need?",
+                "subheadline": "We've picked our top 4 best-sellers just for you",
+                "cta_text": "See Our Picks",
                 "urgency": "medium"
             },
             target_identity="overwhelmed",
@@ -154,9 +154,9 @@ DEMO_VARIANTS = {
             component_id="hero",
             variant_type="headline",
             content={
-                "headline": "Compare Our Best Sellers",
-                "subheadline": "Side-by-side feature breakdown",
-                "cta_text": "See Comparison",
+                "headline": "Compare Features & Specs",
+                "subheadline": "Find the perfect match for your needs",
+                "cta_text": "Compare Products",
                 "urgency": "low"
             },
             target_identity="comparison_focused",
@@ -167,13 +167,41 @@ DEMO_VARIANTS = {
             component_id="hero",
             variant_type="headline",
             content={
-                "headline": "Ready to Check Out?",
+                "headline": "Complete Your Order Today",
                 "subheadline": "Free shipping on orders over $50",
-                "cta_text": "Proceed to Checkout",
+                "cta_text": "View Cart",
                 "urgency": "high"
             },
             target_identity="ready_to_decide",
             performance_metrics={"conversion_rate": 0.18}
+        ),
+        UIVariant(
+            variant_id="hero_cautious_v1",
+            component_id="hero",
+            variant_type="headline",
+            content={
+                "headline": "Shop Risk-Free with 30-Day Returns",
+                "subheadline": "Trusted by 10,000+ customers, secure checkout guaranteed",
+                "cta_text": "Shop Safely",
+                "urgency": "medium",
+                "trust_badges": ["30-day returns", "Secure checkout", "10k+ reviews"]
+            },
+            target_identity="cautious",
+            performance_metrics={"conversion_rate": 0.13}
+        ),
+        UIVariant(
+            variant_id="hero_impulse_v1",
+            component_id="hero",
+            variant_type="headline",
+            content={
+                "headline": "FLASH SALE - 40% OFF!",
+                "subheadline": "Limited time only! Ends in 3 hours",
+                "cta_text": "Shop Sale Now",
+                "urgency": "extreme",
+                "countdown": "3:00:00"
+            },
+            target_identity="impulse_buyer",
+            performance_metrics={"conversion_rate": 0.22}
         )
     ]
 }
