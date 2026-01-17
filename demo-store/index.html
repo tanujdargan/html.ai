@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Store - Adaptive Identity Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .hero.urgency-high {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            transition: all 0.3s ease;
+        }
+
+        .hero button {
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .hero button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .variant-updated {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Products Grid */
+        .products {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .products h2 {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-info p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .product-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .product-info button {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-info button:hover {
+            background: #5568d3;
+        }
+
+        /* Features Section */
+        .features {
+            background: #f7f9fc;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .feature {
+            padding: 30px;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Demo Info Banner */
+        .demo-banner {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .demo-banner strong {
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Info Banner -->
+    <div class="demo-banner">
+        🤖 <strong>Adaptive Identity Engine Demo</strong> - This page dynamically adapts based on your behavior. Check the debug panel (bottom right) to see the AI agents at work!
+    </div>
+
+    <!-- Hero Section - Marked for Adaptive Identity -->
+    <section
+        class="hero"
+        data-identity-component="hero"
+        data-goal="conversion"
+        data-variants="5">
+
+        <h1>Discover Amazing Products</h1>
+        <p>Find the perfect match for your lifestyle</p>
+        <button onclick="window.AdaptiveIdentity.track('add_to_cart', {product: 'hero_cta'})">
+            Shop Now
+        </button>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="products">
+        <h2>Featured Products</h2>
+        <div class="product-grid">
+            <div class="product-card"
+                 data-identity-component="product_card_1"
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_001'})">
+                <div class="product-image">🎧</div>
+                <div class="product-info">
+                    <h3>Wireless Headphones</h3>
+                    <p>Premium sound quality with noise cancellation</p>
+                    <div class="product-price">$199.99</div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_001'})">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="product-card"
+                 data-identity-component="product_card_2"
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_002'})">
+                <div class="product-image">⌚</div>
+                <div class="product-info">
+                    <h3>Smart Watch</h3>
+                    <p>Track your fitness and stay connected</p>
+                    <div class="product-price">$299.99</div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_002'})">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <div class="product-card"
+                 data-identity-component="product_card_3"
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_003'})">
+                <div class="product-image">📱</div>
+                <div class="product-info">
+                    <h3>Smartphone Case</h3>
+                    <p>Protect your device in style</p>
+                    <div class="product-price">$49.99</div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_003'})">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2>Why Shop With Us?</h2>
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">🚚</div>
+                <h3>Free Shipping</h3>
+                <p>On orders over $50</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure Checkout</h3>
+                <p>Your data is safe with us</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⭐</div>
+                <h3>Top Rated</h3>
+                <p>Trusted by thousands</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Adaptive Identity SDK -->
+    <script src="./identity.js"></script>
+
+    <!-- Demo Interaction Script -->
+    <script>
+        // Simulate some user interactions after a delay
+        setTimeout(() => {
+            console.log('[Demo] Simulating user exploration...');
+            window.AdaptiveIdentity.track('scroll_depth_reached', { depth: 0.5 });
+        }, 3000);
+
+        // Add conversion tracking to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.textContent.includes('Cart') || this.textContent.includes('Buy') || this.textContent.includes('Checkout')) {
+                    console.log('[Demo] Conversion event triggered');
+                }
+            });
+        });
+
+        // Simulate backtrack behavior
+        let visitedProducts = [];
+        document.querySelectorAll('.product-card').forEach((card, index) => {
+            card.addEventListener('click', function() {
+                if (visitedProducts.includes(index)) {
+                    window.AdaptiveIdentity.track('backtrack', {
+                        product_id: this.querySelector('h3').textContent
+                    });
+                } else {
+                    visitedProducts.push(index);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
