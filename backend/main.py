@@ -65,6 +65,13 @@ class VariantRequest(BaseModel):
     user_id: Optional[str] = None
 
 
+class SessionCreateRequest(BaseModel):
+    """Request to create a new session"""
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    language: str = "en"
+
+
 class VariantResponse(BaseModel):
     """Response with selected variant"""
     variant_id: str
@@ -90,17 +97,26 @@ def root():
 
 
 @app.post("/api/session/create")
-def create_session(language: str = "en") -> Dict[str, str]:
+def create_session(request: SessionCreateRequest = None) -> Dict[str, str]:
     """
     Create a new user session
 
+    Accepts:
+        session_id: Optional client-provided session ID
+        user_id: Optional persistent user ID from cookie
+        language: Language preference (default: "en")
+
     Returns:
-        session_id for tracking
+        session_id and user_id for tracking
     """
-    session_id = str(uuid.uuid4())
+    # Use provided session_id or generate new one
+    session_id = request.session_id if request and request.session_id else str(uuid.uuid4())
+    user_id = request.user_id if request else None
+    language = request.language if request else "en"
 
     session = UserSession(
         session_id=session_id,
+        user_id=user_id,
         language=language
     )
 
@@ -108,6 +124,7 @@ def create_session(language: str = "en") -> Dict[str, str]:
 
     return {
         "session_id": session_id,
+        "user_id": user_id,
         "created_at": datetime.utcnow().isoformat()
     }
 
@@ -220,12 +237,39 @@ def get_session(session_id: str):
 
     return {
         "session_id": session.session_id,
+        "user_id": session.user_id,
         "identity_state": session.identity_state.value if session.identity_state else None,
         "confidence": session.identity_confidence,
         "behavioral_vector": session.behavioral_vector.to_dict() if session.behavioral_vector else None,
         "events_count": len(session.event_history),
         "last_variant": session.last_variant_shown,
         "audit_log": session.audit_log
+    }
+
+
+@app.get("/api/user/{user_id}/sessions")
+def get_user_sessions(user_id: str):
+    """
+    Get all sessions for a specific user ID (from cookie)
+
+    Useful for tracking user behavior across multiple sessions
+    """
+    user_sessions = []
+    for session_id, session_data in sessions.items():
+        if session_data.get("user_id") == user_id:
+            session = UserSession(**session_data)
+            user_sessions.append({
+                "session_id": session.session_id,
+                "identity_state": session.identity_state.value if session.identity_state else None,
+                "confidence": session.identity_confidence,
+                "events_count": len(session.event_history),
+                "last_variant": session.last_variant_shown
+            })
+
+    return {
+        "user_id": user_id,
+        "session_count": len(user_sessions),
+        "sessions": user_sessions
     }
 
 
