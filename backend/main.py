@@ -74,6 +74,14 @@ class VariantResponse(BaseModel):
     audit_log: List[str] = []
 
 
+class RewardRequest(BaseModel):
+    """Reward tracking request"""
+    session_id: str
+    component_id: str
+    reward_type: str  # "conversion" or "engagement"
+    properties: Dict[str, Any] = {}
+
+
 # ============================================================================
 # API Endpoints
 # ============================================================================
@@ -203,6 +211,53 @@ def get_variant(request: VariantRequest):
         confidence=final_session.identity_confidence,
         audit_log=audit_log
     )
+
+
+@app.post("/api/rewards/track")
+def track_reward(request: RewardRequest):
+    """
+    Track reward signals from frontend (conversions, engagement)
+
+    Gets feedback from user interactions to improve variant selection
+    """
+    session_id = request.session_id
+
+    # Get or create session
+    if session_id not in sessions:
+        session = UserSession(session_id=session_id)
+        sessions[session_id] = session.model_dump()
+
+    session_data = sessions[session_id]
+    session = UserSession(**session_data)
+
+    # Track the reward event
+    reward_event = Event(
+        event_name=EventType.CONVERSION_COMPLETED if request.reward_type == "conversion" else EventType.CLICK,
+        session_id=session_id,
+        component_id=request.component_id,
+        properties={
+            **request.properties,
+            "reward_type": request.reward_type,
+            "is_reward_signal": True
+        },
+        timestamp=datetime.utcnow()
+    )
+
+    session.add_event(reward_event)
+
+    # Update session
+    sessions[session_id] = session.model_dump()
+
+    # Log for debugging
+    variant_id = request.properties.get("variant_id", "unknown")
+    print(f"[REWARD] {request.reward_type.upper()} tracked for variant {variant_id}")
+
+    return {
+        "status": "reward_tracked",
+        "reward_type": request.reward_type,
+        "session_id": session_id,
+        "component_id": request.component_id
+    }
 
 
 @app.get("/api/session/{session_id}")
