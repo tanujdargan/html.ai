@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>AI Optimize Demo</title>
+
+    <!-- Load your custom tag -->
+    <script src="./index.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 40px;
+        }
+
+        .box {
+            padding: 24px;
+            background: #f4f4f4;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 18px;
+            background: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🔮 Adaptive Identity — Demo</h1>
+    <p>This demonstrates your custom &lt;ai-optimize&gt; HTML tag.</p>
+
+    <ai-optimize experiment="hero-cta">
+        <div class="box">
+            <h2>Welcome to my website</h2>
+            <p>This is the default hero section before optimization.</p>
+            <button>Click Me</button>
+        </div>
+    </ai-optimize>
+
+    <br><br>
+
+    <ai-optimize experiment="pricing-block">
+        <div class="box">
+            <h3>Pricing</h3>
+            <p>Basic plan — $9/month</p>
+            <button>Upgrade</button>
+        </div>
+    </ai-optimize>
+
+</body>
+</html>
