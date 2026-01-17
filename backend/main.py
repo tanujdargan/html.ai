@@ -38,8 +38,8 @@ app.add_middleware(
 )
 
 # Initialize workflow
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-workflow = AdaptiveIdentityWorkflow(openai_api_key=OPENAI_API_KEY)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+workflow = AdaptiveIdentityWorkflow(gemini_api_key=GEMINI_API_KEY)
 
 # In-memory session store (in production, use Redis/Supabase)
 sessions: Dict[str, Dict[str, Any]] = {}
