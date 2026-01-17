@@ -341,6 +341,13 @@
     renderVariant(element, content, variantId) {
       element.dataset.variantId = variantId;
 
+      // Update badge
+      const badge = element.querySelector('.hero-badge');
+      if (badge) {
+        const identityLabel = variantId.split('_')[1] || 'default';
+        badge.textContent = identityLabel.toUpperCase();
+      }
+
       // Update headline if exists
       const headline = element.querySelector('h1, h2, .headline');
       if (headline && content.headline) {
@@ -362,10 +369,41 @@
         cta.classList.add('variant-updated');
       }
 
+      // Remove all existing variant classes
+      element.classList.remove(
+        'variant-confident',
+        'variant-exploratory',
+        'variant-overwhelmed',
+        'variant-comparison',
+        'variant-ready',
+        'variant-cautious',
+        'variant-impulse',
+        'urgency-high'
+      );
+
+      // Apply variant-specific CSS class based on variantId
+      if (variantId.includes('confident')) {
+        element.classList.add('variant-confident');
+      } else if (variantId.includes('exploratory')) {
+        element.classList.add('variant-exploratory');
+      } else if (variantId.includes('overwhelmed')) {
+        element.classList.add('variant-overwhelmed');
+      } else if (variantId.includes('comparison')) {
+        element.classList.add('variant-comparison');
+      } else if (variantId.includes('ready')) {
+        element.classList.add('variant-ready');
+      } else if (variantId.includes('cautious')) {
+        element.classList.add('variant-cautious');
+      } else if (variantId.includes('impulse')) {
+        element.classList.add('variant-impulse');
+      }
+
       // Add urgency indicator if specified
-      if (content.urgency === 'high') {
+      if (content.urgency === 'high' || content.urgency === 'extreme') {
         element.classList.add('urgency-high');
       }
+
+      console.log('[Adaptive Identity] Applied variant class:', variantId);
     }
 
     /**

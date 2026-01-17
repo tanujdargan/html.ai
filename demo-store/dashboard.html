@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Adaptive Identity Engine</title>
+
+    <!-- Shopify Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f7f7f7;
+            color: #202223;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            padding: 20px 0;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6d7175;
+            font-size: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e1e3e5;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6d7175;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #202223;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e1e3e5;
+            padding: 32px;
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            border-bottom: 2px solid #e1e3e5;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6d7175;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e1e3e5;
+        }
+
+        tbody tr:hover {
+            background: #f7f7f7;
+        }
+
+        .variant-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .variant-confident { background: #e8f5f2; color: #004c3f; }
+        .variant-exploratory { background: #e3f2fd; color: #0d47a1; }
+        .variant-overwhelmed { background: #f3e5f5; color: #4a148c; }
+        .variant-comparison { background: #fff3e0; color: #e65100; }
+        .variant-ready { background: #1a1a1a; color: #00d084; }
+        .variant-cautious { background: #ffebee; color: #b71c1c; }
+        .variant-impulse { background: #ff1744; color: white; }
+
+        .conversion-rate {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .conversion-high { color: #008060; }
+        .conversion-medium { color: #ff9800; }
+        .conversion-low { color: #f44336; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e3e5;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #008060;
+            transition: width 0.3s ease;
+        }
+
+        .identity-chart {
+            display: grid;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .identity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .identity-label {
+            min-width: 180px;
+            font-weight: 500;
+        }
+
+        .identity-bar {
+            flex: 1;
+            height: 32px;
+            background: #e1e3e5;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .identity-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #008060, #00b870);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .refresh-btn {
+            background: #008060;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #006e52;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6d7175;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Adaptive Identity Analytics</h1>
+            <p class="subtitle">Real-time variant performance and user behavior insights</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Key Stats -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Sessions</div>
+                <div class="stat-value" id="total-sessions">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Conversions</div>
+                <div class="stat-value" id="total-conversions">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Overall Conv. Rate</div>
+                <div class="stat-value" id="overall-conversion-rate">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Engagement Time</div>
+                <div class="stat-value" id="avg-engagement">-</div>
+            </div>
+        </div>
+
+        <!-- Variant Performance Table -->
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2>Variant Performance</h2>
+                <button class="refresh-btn" onclick="loadDashboard()">Refresh Data</button>
+            </div>
+
+            <div id="variants-table">
+                <div class="loading">Loading variant data...</div>
+            </div>
+        </div>
+
+        <!-- Identity Distribution -->
+        <div class="section">
+            <h2>Identity State Distribution</h2>
+            <div id="identity-chart" class="identity-chart">
+                <div class="loading">Loading identity data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/api/analytics/dashboard`);
+                const data = await response.json();
+
+                console.log('Analytics data:', data);
+
+                // Update key stats
+                document.getElementById('total-sessions').textContent = data.total_sessions || 0;
+
+                const totalConversions = data.variant_stats.reduce((sum, v) => sum + (v.conversions || 0), 0);
+                document.getElementById('total-conversions').textContent = totalConversions;
+
+                const overallRate = data.total_sessions > 0
+                    ? (totalConversions / data.total_sessions * 100).toFixed(1)
+                    : 0;
+                document.getElementById('overall-conversion-rate').textContent = overallRate + '%';
+
+                const avgEngagement = data.variant_stats.length > 0
+                    ? (data.variant_stats.reduce((sum, v) => sum + (v.avg_engagement_time || 0), 0) / data.variant_stats.length).toFixed(1)
+                    : 0;
+                document.getElementById('avg-engagement').textContent = avgEngagement + 's';
+
+                // Render variant table
+                renderVariantTable(data.variant_stats);
+
+                // Render identity chart
+                renderIdentityChart(data.identity_distribution, data.total_sessions);
+
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        function renderVariantTable(variants) {
+            if (variants.length === 0) {
+                document.getElementById('variants-table').innerHTML = '<p style="color: #6d7175;">No variant data yet. Start browsing the store to generate analytics!</p>';
+                return;
+            }
+
+            // Sort by conversion rate
+            variants.sort((a, b) => (b.conversion_rate || 0) - (a.conversion_rate || 0));
+
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th>Times Shown</th>
+                            <th>Conversions</th>
+                            <th>Conv. Rate</th>
+                            <th>Avg Engagement</th>
+                            <th>Top Identity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${variants.map(v => {
+                            const convRate = (v.conversion_rate * 100).toFixed(1);
+                            const convClass = convRate >= 15 ? 'conversion-high' : convRate >= 10 ? 'conversion-medium' : 'conversion-low';
+                            const variantClass = getVariantClass(v.variant_id);
+                            const topIdentity = getTopIdentity(v.identity_breakdown);
+
+                            return `
+                                <tr>
+                                    <td><span class="variant-badge ${variantClass}">${v.variant_id}</span></td>
+                                    <td>${v.total_shown}</td>
+                                    <td>${v.conversions}</td>
+                                    <td class="conversion-rate ${convClass}">${convRate}%</td>
+                                    <td>${v.avg_engagement_time.toFixed(1)}s</td>
+                                    <td>${topIdentity}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('variants-table').innerHTML = tableHTML;
+        }
+
+        function renderIdentityChart(distribution, total) {
+            if (Object.keys(distribution).length === 0) {
+                document.getElementById('identity-chart').innerHTML = '<p style="color: #6d7175;">No identity data yet.</p>';
+                return;
+            }
+
+            const identities = Object.entries(distribution).sort((a, b) => b[1] - a[1]);
+
+            const chartHTML = identities.map(([identity, count]) => {
+                const percentage = ((count / total) * 100).toFixed(1);
+                return `
+                    <div class="identity-item">
+                        <div class="identity-label">${identity}</div>
+                        <div class="identity-bar">
+                            <div class="identity-bar-fill" style="width: ${percentage}%">
+                                ${count} (${percentage}%)
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('identity-chart').innerHTML = chartHTML;
+        }
+
+        function getVariantClass(variantId) {
+            if (variantId.includes('confident')) return 'variant-confident';
+            if (variantId.includes('exploratory')) return 'variant-exploratory';
+            if (variantId.includes('overwhelmed')) return 'variant-overwhelmed';
+            if (variantId.includes('comparison')) return 'variant-comparison';
+            if (variantId.includes('ready')) return 'variant-ready';
+            if (variantId.includes('cautious')) return 'variant-cautious';
+            if (variantId.includes('impulse')) return 'variant-impulse';
+            return '';
+        }
+
+        function getTopIdentity(breakdown) {
+            if (!breakdown || Object.keys(breakdown).length === 0) return 'N/A';
+            const sorted = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+            return sorted[0][0];
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Auto-refresh every 5 seconds
+        setInterval(loadDashboard, 5000);
+    </script>
+</body>
+</html>

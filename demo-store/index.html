@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Store - Adaptive Identity Engine</title>
+    <title>TechStore - Premium Electronics</title>
+
+    <!-- Shopify Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -12,69 +18,244 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #202223;
+            background: #f7f7f7;
+            font-size: 14px;
         }
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 100px 20px;
-            text-align: center;
-            min-height: 500px;
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 20px;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            transition: all 0.5s ease;
         }
 
-        .hero.urgency-high {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #202223;
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        nav a {
+            color: #202223;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #5c5f62;
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #008060;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Hero Banner - Base */
+        .hero {
+            background: white;
+            padding: 80px 20px;
+            text-align: center;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
+            font-size: 56px;
+            margin-bottom: 20px;
             font-weight: 700;
-            transition: all 0.3s ease;
+            color: #202223;
+            transition: all 0.4s ease;
+            letter-spacing: -0.02em;
         }
 
         .hero p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-            transition: all 0.3s ease;
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #6d7175;
+            transition: all 0.4s ease;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .hero button {
-            background: white;
-            color: #667eea;
-            padding: 15px 40px;
-            font-size: 1.2rem;
+            background: #008060;
+            color: white;
+            padding: 18px 48px;
+            font-size: 16px;
             border: none;
-            border-radius: 50px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,128,96,0.2);
         }
 
         .hero button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: #006e52;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,128,96,0.3);
+        }
+
+        /* Variant-specific styles - VERY DISTINCT */
+
+        /* CONFIDENT - Shopify Green */
+        .hero.variant-confident {
+            background: linear-gradient(135deg, #e8f5f2 0%, #d4ede6 100%);
+            border-top: 4px solid #008060;
+        }
+        .hero.variant-confident h1 { color: #004c3f; }
+        .hero.variant-confident .hero-badge { background: #008060; color: white; }
+
+        /* EXPLORATORY - Blue */
+        .hero.variant-exploratory {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-top: 4px solid #2196f3;
+        }
+        .hero.variant-exploratory h1 { color: #0d47a1; }
+        .hero.variant-exploratory .hero-badge { background: #2196f3; color: white; }
+        .hero.variant-exploratory button { background: #2196f3; box-shadow: 0 2px 8px rgba(33,150,243,0.2); }
+        .hero.variant-exploratory button:hover { background: #1976d2; }
+
+        /* OVERWHELMED - Purple/Lavender */
+        .hero.variant-overwhelmed {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-top: 4px solid #9c27b0;
+        }
+        .hero.variant-overwhelmed h1 { color: #4a148c; }
+        .hero.variant-overwhelmed .hero-badge { background: #9c27b0; color: white; }
+        .hero.variant-overwhelmed button { background: #9c27b0; box-shadow: 0 2px 8px rgba(156,39,176,0.2); }
+        .hero.variant-overwhelmed button:hover { background: #7b1fa2; }
+
+        /* COMPARISON_FOCUSED - Orange */
+        .hero.variant-comparison {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-top: 4px solid #ff9800;
+        }
+        .hero.variant-comparison h1 { color: #e65100; }
+        .hero.variant-comparison .hero-badge { background: #ff9800; color: white; }
+        .hero.variant-comparison button { background: #ff9800; box-shadow: 0 2px 8px rgba(255,152,0,0.2); }
+        .hero.variant-comparison button:hover { background: #f57c00; }
+
+        /* READY_TO_DECIDE - Dark Green/Black (Checkout) */
+        .hero.variant-ready {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-top: 4px solid #00d084;
+        }
+        .hero.variant-ready h1 { color: #ffffff; }
+        .hero.variant-ready p { color: #b8b8b8; }
+        .hero.variant-ready .hero-badge { background: #00d084; color: #000; }
+        .hero.variant-ready button { background: #00d084; color: #000; }
+        .hero.variant-ready button:hover { background: #00b870; }
+
+        /* CAUTIOUS - Pink/Red (Trust & Urgency) */
+        .hero.variant-cautious {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-top: 4px solid #f44336;
+        }
+        .hero.variant-cautious h1 { color: #b71c1c; }
+        .hero.variant-cautious .hero-badge { background: #f44336; color: white; }
+        .hero.variant-cautious button { background: #f44336; box-shadow: 0 2px 8px rgba(244,67,54,0.2); }
+        .hero.variant-cautious button:hover { background: #d32f2f; }
+
+        /* IMPULSE_BUYER - Red Flash Sale */
+        .hero.variant-impulse {
+            background: linear-gradient(135deg, #ff1744 0%, #d50000 100%);
+            border-top: 4px solid #ff6e40;
+            animation: pulse-bg 2s infinite;
+        }
+        .hero.variant-impulse h1 { color: #ffffff; font-size: 64px; }
+        .hero.variant-impulse p { color: #ffcccb; }
+        .hero.variant-impulse .hero-badge { background: #ffeb3b; color: #d50000; animation: flash 1.5s infinite; }
+        .hero.variant-impulse button { background: #ffeb3b; color: #d50000; font-size: 18px; }
+        .hero.variant-impulse button:hover { background: #fdd835; }
+
+        @keyframes pulse-bg {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.05); }
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
         .variant-updated {
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.6s ease;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
@@ -82,198 +263,315 @@
             }
         }
 
-        /* Products Grid */
+        /* Products Section */
         .products {
             max-width: 1200px;
-            margin: 80px auto;
+            margin: 60px auto;
             padding: 0 20px;
         }
 
         .products h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            text-align: center;
-            color: #333;
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: #202223;
+            font-weight: 600;
         }
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
         }
 
         .product-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 1px solid #e1e3e5;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }
 
         .product-image {
             width: 100%;
-            height: 300px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 280px;
+            background: linear-gradient(135deg, #f6f6f7 0%, #e1e3e5 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 80px;
+            position: relative;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #008060;
             color: white;
-            font-size: 3rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .product-info {
             padding: 20px;
         }
 
-        .product-info h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+        .product-vendor {
+            font-size: 12px;
+            color: #6d7175;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        .product-info p {
-            color: #666;
-            margin-bottom: 1rem;
+        .product-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #202223;
+            font-weight: 600;
+        }
+
+        .product-reviews {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .review-count {
+            color: #6d7175;
+            font-size: 13px;
         }
 
         .product-price {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 1rem;
+            font-size: 20px;
+            font-weight: 600;
+            color: #202223;
+            margin-bottom: 16px;
+        }
+
+        .product-price .original {
+            font-size: 16px;
+            color: #6d7175;
+            text-decoration: line-through;
+            margin-left: 8px;
         }
 
         .product-info button {
             width: 100%;
-            background: #667eea;
+            background: #202223;
             color: white;
             padding: 12px;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 4px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .product-info button:hover {
-            background: #5568d3;
+            background: #44474a;
         }
 
-        /* Features Section */
-        .features {
-            background: #f7f9fc;
-            padding: 80px 20px;
-            text-align: center;
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid #e1e3e5;
+            padding: 40px 20px;
+            margin-top: 80px;
         }
 
-        .features h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .feature-grid {
-            max-width: 1000px;
+        .footer-content {
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 40px;
         }
 
-        .feature {
-            padding: 30px;
+        .footer-section h4 {
+            margin-bottom: 16px;
+            color: #202223;
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .footer-section a {
+            display: block;
+            color: #6d7175;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
-        .feature h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .footer-section a:hover {
+            color: #202223;
         }
 
-        /* Demo Info Banner */
+        /* Demo Banner */
         .demo-banner {
-            background: #1a1a1a;
+            background: #202223;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 20px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 13px;
         }
 
         .demo-banner strong {
-            color: #4ade80;
+            color: #95f3d9;
         }
     </style>
 </head>
 <body>
     <!-- Demo Info Banner -->
     <div class="demo-banner">
-        🤖 <strong>Adaptive Identity Engine Demo</strong> - This page dynamically adapts based on your behavior. Check the debug panel (bottom right) to see the AI agents at work!
+        <strong>AI-Powered Demo</strong> - This storefront adapts to your shopping behavior in real-time
     </div>
 
-    <!-- Hero Section - Marked for Adaptive Identity -->
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">TechStore</a>
+            <nav>
+                <a href="#">Products</a>
+                <a href="#">Collections</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+            <div class="cart-icon">
+                <span>🛒</span>
+                <div class="cart-count">0</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section - Adaptive Identity Component -->
     <section
         class="hero"
+        id="adaptive-hero"
         data-identity-component="hero"
         data-goal="conversion"
-        data-variants="5">
+        data-variants="7">
 
-        <h1>Discover Amazing Products</h1>
-        <p>Find the perfect match for your lifestyle</p>
-        <button onclick="window.AdaptiveIdentity.track('add_to_cart', {product: 'hero_cta'})">
-            Shop Now
-        </button>
+        <div class="hero-content">
+            <div class="hero-badge">Default</div>
+            <h1>Premium Tech at Your Fingertips</h1>
+            <p>Discover the latest gadgets and electronics with free shipping on orders over $50</p>
+            <button onclick="window.AdaptiveIdentity.track('click', {cta: 'shop_now', component: 'hero'})">
+                Shop Now
+            </button>
+        </div>
     </section>
 
     <!-- Products Grid -->
     <section class="products">
-        <h2>Featured Products</h2>
+        <h2>Trending Products</h2>
         <div class="product-grid">
+            <!-- Product 1 -->
             <div class="product-card"
                  data-identity-component="product_card_1"
-                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_001'})">
-                <div class="product-image">🎧</div>
+                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_headphones'})">
+                <div class="product-image">
+                    <div class="product-badge">Best Seller</div>
+                    🎧
+                </div>
                 <div class="product-info">
-                    <h3>Wireless Headphones</h3>
-                    <p>Premium sound quality with noise cancellation</p>
-                    <div class="product-price">$199.99</div>
-                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_001'})">
+                    <div class="product-vendor">SoundWave</div>
+                    <h3>Wireless Noise-Cancelling Headphones</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(234 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $199.99
+                        <span class="original">$249.99</span>
+                    </div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_headphones', price: 199.99})">
                         Add to Cart
                     </button>
                 </div>
             </div>
 
+            <!-- Product 2 -->
             <div class="product-card"
                  data-identity-component="product_card_2"
-                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_002'})">
-                <div class="product-image">⌚</div>
+                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_watch'})">
+                <div class="product-image">
+                    <div class="product-badge">New</div>
+                    ⌚
+                </div>
                 <div class="product-info">
-                    <h3>Smart Watch</h3>
-                    <p>Track your fitness and stay connected</p>
-                    <div class="product-price">$299.99</div>
-                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_002'})">
+                    <div class="product-vendor">FitTrack</div>
+                    <h3>Smart Fitness Watch Pro</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(156 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $299.99
+                    </div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_watch', price: 299.99})">
                         Add to Cart
                     </button>
                 </div>
             </div>
 
+            <!-- Product 3 -->
             <div class="product-card"
                  data-identity-component="product_card_3"
-                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_003'})">
-                <div class="product-image">📱</div>
+                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_case'})">
+                <div class="product-image">
+                    📱
+                </div>
                 <div class="product-info">
-                    <h3>Smartphone Case</h3>
-                    <p>Protect your device in style</p>
-                    <div class="product-price">$49.99</div>
-                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_003'})">
+                    <div class="product-vendor">ArmorCase</div>
+                    <h3>Premium Leather Phone Case</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(89 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $49.99
+                        <span class="original">$69.99</span>
+                    </div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_case', price: 49.99})">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="product-card"
+                 data-identity-component="product_card_4"
+                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_charger'})">
+                <div class="product-image">
+                    🔌
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">PowerUp</div>
+                    <h3>Ultra-Fast Wireless Charger</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(67 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $39.99
+                    </div>
+                    <button onclick="event.stopPropagation(); window.AdaptiveIdentity.track('add_to_cart', {product_id: 'prod_charger', price: 39.99})">
                         Add to Cart
                     </button>
                 </div>
@@ -281,61 +579,90 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <h2>Why Shop With Us?</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <div class="feature-icon">🚚</div>
-                <h3>Free Shipping</h3>
-                <p>On orders over $50</p>
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Shop</h4>
+                <a href="#">All Products</a>
+                <a href="#">New Arrivals</a>
+                <a href="#">Best Sellers</a>
+                <a href="#">Sale</a>
             </div>
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h3>Secure Checkout</h3>
-                <p>Your data is safe with us</p>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <a href="#">Contact Us</a>
+                <a href="#">Shipping Info</a>
+                <a href="#">Returns</a>
+                <a href="#">FAQ</a>
             </div>
-            <div class="feature">
-                <div class="feature-icon">⭐</div>
-                <h3>Top Rated</h3>
-                <p>Trusted by thousands</p>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Careers</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
             </div>
         </div>
-    </section>
+    </footer>
 
     <!-- Adaptive Identity SDK -->
     <script src="./identity.js"></script>
 
-    <!-- Demo Interaction Script -->
+    <!-- Shopping Cart Logic -->
     <script>
-        // Simulate some user interactions after a delay
-        setTimeout(() => {
-            console.log('[Demo] Simulating user exploration...');
-            window.AdaptiveIdentity.track('scroll_depth_reached', { depth: 0.5 });
-        }, 3000);
+        let cartCount = 0;
+        const cartCountEl = document.querySelector('.cart-count');
 
-        // Add conversion tracking to buttons
-        document.querySelectorAll('button').forEach(button => {
+        document.querySelectorAll('.product-info button').forEach(button => {
             button.addEventListener('click', function() {
-                if (this.textContent.includes('Cart') || this.textContent.includes('Buy') || this.textContent.includes('Checkout')) {
-                    console.log('[Demo] Conversion event triggered');
-                }
+                cartCount++;
+                cartCountEl.textContent = cartCount;
+                cartCountEl.style.animation = 'pulse 0.3s ease';
+                setTimeout(() => {
+                    cartCountEl.style.animation = '';
+                }, 300);
             });
         });
 
-        // Simulate backtrack behavior
-        let visitedProducts = [];
+        // Track backtracking behavior
+        let visitedProducts = new Set();
         document.querySelectorAll('.product-card').forEach((card, index) => {
             card.addEventListener('click', function() {
-                if (visitedProducts.includes(index)) {
+                const productId = this.dataset.identityComponent;
+                if (visitedProducts.has(productId)) {
                     window.AdaptiveIdentity.track('backtrack', {
-                        product_id: this.querySelector('h3').textContent
+                        product_id: productId,
+                        revisit_count: visitedProducts.size
                     });
                 } else {
-                    visitedProducts.push(index);
+                    visitedProducts.add(productId);
                 }
             });
         });
+
+        // Track scroll depth
+        let maxScroll = 0;
+        window.addEventListener('scroll', () => {
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            if (scrollPercent > maxScroll) {
+                maxScroll = scrollPercent;
+                if (maxScroll > 25 && maxScroll < 30) {
+                    window.AdaptiveIdentity.track('scroll_depth_reached', { depth: 0.25 });
+                } else if (maxScroll > 50 && maxScroll < 55) {
+                    window.AdaptiveIdentity.track('scroll_depth_reached', { depth: 0.5 });
+                } else if (maxScroll > 75 && maxScroll < 80) {
+                    window.AdaptiveIdentity.track('scroll_depth_reached', { depth: 0.75 });
+                }
+            }
+        });
     </script>
+
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
 </body>
 </html>
