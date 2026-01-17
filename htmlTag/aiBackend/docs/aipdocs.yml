@@ -1,0 +1,112 @@
+openapi: 3.0.0
+info:
+  title: html.ai Backend API
+  version: "1.0.0"
+  description: API for receiving HTML components, user-scoped HTML, and variant scoring.
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+
+  /log-html:
+    post:
+      summary: Receive HTML sent from custom <ai-optimize> tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HtmlPayload"
+      responses:
+        "200":
+          description: Successfully logged HTML
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  received:
+                    type: boolean
+
+  /html-with-user:
+    post:
+      summary: Receive HTML with user ID for personalization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HtmlWithUserPayload"
+      responses:
+        "200":
+          description: Successfully logged HTML + user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+  /submit-score:
+    post:
+      summary: Submit performance score for a selected variant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScorePayload"
+      responses:
+        "200":
+          description: Successfully logged variant score
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+components:
+  schemas:
+
+    HtmlPayload:
+      type: object
+      properties:
+        experiment:
+          type: string
+        html:
+          type: string
+      required:
+        - experiment
+        - html
+
+    HtmlWithUserPayload:
+      type: object
+      properties:
+        experiment:
+          type: string
+        user_id:
+          type: string
+        html:
+          type: string
+      required:
+        - experiment
+        - user_id
+        - html
+
+    ScorePayload:
+      type: object
+      properties:
+        variant_id:
+          type: string
+        score:
+          type: number
+          format: float
+      required:
+        - variant_id
+        - score
