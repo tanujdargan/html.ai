@@ -38,3 +38,7 @@ npm-debug.log*
 
 # Claude Code (don't commit this to hackathon repo)
 .claude/
+venv/*
+# Python virtual environment
+venv/
+.venv/

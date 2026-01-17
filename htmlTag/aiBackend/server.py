@@ -29,7 +29,8 @@ users_collection = mongodb["users"]  # collection
 # ----------------------------------------
 class HtmlPayload(BaseModel):
     user_id: str
-    html: str
+    changingHtml: str
+    contextHtml: str
 
 
 class RewardPayload(BaseModel):
@@ -48,7 +49,28 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
 
     """
 
-    if does_user_exists(user_id):
+    if not does_user_exists(user_id):
+
+
+        users_collection.insert_one({
+            "user_id": user_id,
+            "variants": {
+                "A": {
+                    "current_html": changingHtml,
+                    "current_score": 4.3,
+                    "history": []
+                },
+
+                "B": {
+                    "current_html": changingHtml,
+                    "current_score": 3.0,
+                    "history": []
+                }
+            }
+        })
+        print("insert")
+
+
         return {
             "status": "ok",
             "user_id": user_id,
@@ -89,9 +111,12 @@ def choseHtmltoUse(user_id: str, changingHtml: str, contextHtml: str) -> str:
     return ""
 
 
+def rederingNewHt():
+    pass
 
 
-def does_user_exists(user_id: str):
+
+def does_user_exists(user_id: str) -> bool:
     # Check if user exists
     existing = users_collection.find_one({"user_id": user_id})
 
@@ -99,11 +124,6 @@ def does_user_exists(user_id: str):
         return True  # user already exists
 
     # Insert new user
-    users_collection.insert_one({
-        "user_id": user_id,
-        "html_history": [],
-
-    })
 
     return False  # user was created now
 
@@ -132,7 +152,7 @@ def rewardTag(user_id: str, reward: float):
 # ----------------------------------------
 @app.post("/tagAi")
 async def tag_ai(payload: HtmlPayload):
-    return aiTag(payload.user_id, payload.html)
+    return aiTag(payload.user_id, payload.changingHtml, payload.contextHtml)
 
 
 @app.post("/rewardTag")
