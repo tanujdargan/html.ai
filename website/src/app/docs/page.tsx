@@ -47,15 +47,13 @@ export default function DocsPage() {
         <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50 mb-4">
           <pre className="text-sm font-mono">
             <code className="text-emerald-400">{`<!-- 1. Add SDK -->
-<script src="http://localhost:8080/htmlai-sdk.js"
-        data-api-key="YOUR_API_KEY">
-</script>
+<script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>
 
 <!-- 2. Wrap components -->
-<ai-optimize component-id="hero">
-  <h1 data-ai="headline">Welcome</h1>
-  <button data-ai="cta">Shop Now</button>
-</ai-optimize>`}</code>
+<ai-opt experiment="hero">
+  <h1>Welcome</h1>
+  <button>Shop Now</button>
+</ai-opt>`}</code>
           </pre>
         </div>
 

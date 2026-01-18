@@ -16,11 +16,7 @@ export default function GettingStartedPage() {
         </p>
         <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50">
           <pre className="text-sm font-mono">
-            <code className="text-emerald-400">{`<script
-  src="http://localhost:8080/htmlai-sdk.js"
-  data-api-key="YOUR_API_KEY"
-  data-api-url="http://localhost:3000">
-</script>`}</code>
+            <code className="text-emerald-400">{`<script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>`}</code>
           </pre>
         </div>
       </section>
@@ -57,10 +53,10 @@ export default function GettingStartedPage() {
             </div>
             <div className="ml-10 glass rounded-lg p-4 overflow-x-auto border border-border/30">
               <pre className="text-sm font-mono">
-                <code className="text-emerald-400">{`<ai-optimize component-id="hero">
-  <h1 data-ai="headline">Welcome</h1>
-  <button data-ai="cta">Shop Now</button>
-</ai-optimize>`}</code>
+                <code className="text-emerald-400">{`<ai-opt experiment="hero">
+  <h1>Welcome</h1>
+  <button>Shop Now</button>
+</ai-opt>`}</code>
               </pre>
             </div>
           </div>
@@ -81,10 +77,8 @@ export default function GettingStartedPage() {
             </thead>
             <tbody>
               {[
-                { attr: "data-api-key", desc: "Your public API key (required)" },
-                { attr: "data-api-url", desc: "API endpoint URL" },
-                { attr: "data-tracking-domain", desc: "Cross-site tracking domain" },
-                { attr: "data-debug", desc: "Enable console logging" },
+                { attr: "experiment", desc: "Unique experiment/component identifier (required)" },
+                { attr: "type=\"module\"", desc: "Required for ES module import" },
               ].map((row) => (
                 <tr key={row.attr} className="border-b border-border/50 hover:bg-white/5">
                   <td className="p-4 font-mono text-primary">{row.attr}</td>
