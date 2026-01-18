@@ -1,6 +1,6 @@
-# 🚀 html.ai — Quick Start Guide (Hackathon Edition)
+# 🚀 html.ai — Quick Start Guide 
 
-This project lets developers wrap any part of their website in a **custom HTML tag** (`<ai-optimize>`) that automatically sends its inner HTML to an AI backend for analysis, variant generation, and personalization.
+This project lets developers wrap any part of their website in a **custom HTML tag** (`<ai-opt>`) that automatically sends its inner HTML to an AI backend for analysis, variant generation, and personalization.
 
 This README explains:
 - How to run everything
@@ -83,7 +83,7 @@ Visit:
 http://localhost:8080
 ```
 
-You should see the demo page with two `<ai-optimize>` blocks.
+You should see the demo page with two `<ai-opt>` blocks.
 
 Every time the page loads, each block sends its HTML to the backend at:
 
@@ -100,9 +100,9 @@ Check Docker logs to confirm HTML is being captured.
 Developers wrap any part of their site:
 
 ```html
-<ai-optimize experiment="hero-cta">
+<ai-opt experiment="hero-cta">
     <button>Click Me</button>
-</ai-optimize>
+</ai-opt>
 ```
 
 Our SDK:
@@ -159,7 +159,7 @@ Later, instead of returning static HTML, the backend will:
 
 ### **htmlTag/sdk/**
 Everything frontend:
-- `AiOptimizeElement.js` → defines `<ai-optimize>`
+- `AiOptimizeElement.js` → defines `<ai-opt>`
 - `index.js` → auto-registers custom element
 - `index.html` → demo
 
