@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoopify - Premium Footwear</title>
+
+    <!-- Shopify Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #202223;
+            background: #f7f7f7;
+            font-size: 14px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #202223;
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        nav a {
+            color: #202223;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #5c5f62;
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #008060;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #202223;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #6d7175;
+        }
+
+        .hero button {
+            background: #008060;
+            color: white;
+            padding: 18px 48px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,128,96,0.2);
+        }
+
+        .hero button:hover {
+            background: #006e52;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,128,96,0.3);
+        }
+
+        /* Products Section */
+        .products {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .products h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: #202223;
+            font-weight: 600;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e1e3e5;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 280px;
+            background: #f6f6f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #008060;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-vendor {
+            font-size: 12px;
+            color: #6d7175;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .product-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #202223;
+            font-weight: 600;
+        }
+
+        .product-reviews {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .review-count {
+            color: #6d7175;
+            font-size: 13px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: #202223;
+            margin-bottom: 16px;
+        }
+
+        .product-price .original {
+            font-size: 16px;
+            color: #6d7175;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .product-info button {
+            width: 100%;
+            background: #202223;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .product-info button:hover {
+            background: #44474a;
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: #202223;
+            color: white;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .demo-banner strong {
+            color: #95f3d9;
+        }
+
+        /* Debug Panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #e1e3e5;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 320px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .debug-panel h4 {
+            color: #202223;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .debug-item {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .debug-label {
+            color: #6d7175;
+            font-weight: 600;
+        }
+
+        .debug-value {
+            color: #202223;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .business-badge {
+            background: #008060;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .cross-site-link {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e1e3e5;
+        }
+
+        .cross-site-link a {
+            color: #008060;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .cross-site-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Info Banner -->
+    <div class="demo-banner">
+        <strong>Business A - Shoe Store</strong> | Cross-site tracking enabled | html.ai Demo
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">Shoopify</a>
+            <nav>
+                <a href="#">Running</a>
+                <a href="#">Casual</a>
+                <a href="#">Hiking</a>
+                <a href="#">Sale</a>
+            </nav>
+            <div class="cart-icon">
+                <span>🛒</span>
+                <div class="cart-count">0</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">New Arrivals</div>
+            <h1>Step into Premium Comfort</h1>
+            <p>Discover our curated collection of premium footwear with free shipping on orders over $50</p>
+            <button id="hero-cta">Shop Collection</button>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="products">
+        <h2>Trending Footwear</h2>
+        <div class="product-grid">
+            <!-- Product 1 -->
+            <div class="product-card" data-product-id="shoe-1">
+                <div class="product-image">
+                    <div class="product-badge">Best Seller</div>
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop" alt="Running Shoes">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Nike</div>
+                    <h3>Air Max Pro Runner</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(342 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $149.99
+                        <span class="original">$189.99</span>
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 2 -->
+            <div class="product-card" data-product-id="shoe-2">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop" alt="Sneakers">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Adidas</div>
+                    <h3>Classic Street Sneakers</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(198 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $89.99
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="product-card" data-product-id="shoe-3">
+                <div class="product-image">
+                    <div class="product-badge">New</div>
+                    <img src="https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=400&h=400&fit=crop" alt="Hiking Boots">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Timberland</div>
+                    <h3>Trail Master Hiking Boots</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(276 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $199.99
+                        <span class="original">$249.99</span>
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="product-card" data-product-id="shoe-4">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400&h=400&fit=crop" alt="Dress Shoes">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Clarks</div>
+                    <h3>Executive Dress Shoes</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(124 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $159.99
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h4>🔧 html.ai Debug</h4>
+        <div class="debug-item">
+            <span class="debug-label">Business:</span>
+            <span class="business-badge">A - Shoes</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">User ID:</span>
+            <span class="debug-value" id="debug-uid">Loading...</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Session:</span>
+            <span class="debug-value" id="debug-session">Loading...</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Events:</span>
+            <span class="debug-value" id="debug-events">0</span>
+        </div>
+        <div class="cross-site-link">
+            <a href="http://localhost:8082/demo-business-b.html">→ Visit Amazoon (Clothes)</a>
+        </div>
+    </div>
+
+    <!-- html.ai SDK Integration -->
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let userId = localStorage.getItem('htmlai_global_user_id');
+        let sessionId = sessionStorage.getItem('htmlai_session_id');
+        let eventCount = 0;
+        let cartCount = 0;
+
+        // Initialize IDs
+        if (!userId) {
+            userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            localStorage.setItem('htmlai_global_user_id', userId);
+        }
+        if (!sessionId) {
+            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            sessionStorage.setItem('htmlai_session_id', sessionId);
+        }
+
+        document.getElementById('debug-uid').textContent = userId.substr(0, 16) + '...';
+        document.getElementById('debug-session').textContent = sessionId.substr(0, 16) + '...';
+
+        console.log('[Shoopify] User ID:', userId);
+
+        // Track product clicks
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', async () => {
+                eventCount++;
+                document.getElementById('debug-events').textContent = eventCount;
+                
+                const productId = card.dataset.productId;
+                const productName = card.querySelector('h3').textContent;
+                
+                console.log('[Shoopify] Product clicked:', productName);
+
+                try {
+                    await fetch(`${API_BASE}/rewardTag`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            reward: 1.0
+                        })
+                    });
+                } catch (error) {
+                    console.error('[Shoopify] Failed to track:', error);
+                }
+            });
+        });
+
+        // Track Add to Cart
+        document.querySelectorAll('.product-info button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                cartCount++;
+                eventCount++;
+                document.querySelector('.cart-count').textContent = cartCount;
+                document.getElementById('debug-events').textContent = eventCount;
+                
+                const card = button.closest('.product-card');
+                const productName = card.querySelector('h3').textContent;
+                
+                console.log('[Shoopify] Added to cart:', productName);
+
+                try {
+                    await fetch(`${API_BASE}/rewardTag`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            reward: 3.0
+                        })
+                    });
+                } catch (error) {
+                    console.error('[Shoopify] Failed to track:', error);
+                }
+            });
+        });
+
+        // Track CTA
+        document.getElementById('hero-cta').addEventListener('click', async () => {
+            eventCount++;
+            document.getElementById('debug-events').textContent = eventCount;
+            
+            try {
+                await fetch(`${API_BASE}/rewardTag`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        reward: 2.0
+                    })
+                });
+            } catch (error) {
+                console.error('[StepStyle] Failed to track:', error);
+            }
+        });
+    </script>
+</body>
+</html>
