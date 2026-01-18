@@ -61,7 +61,7 @@ export default function ApiReferencePage() {
             { event: "mouse_hesitation", desc: "Mouse idle for 2+ seconds" },
             { event: "hover", desc: "Hover on data-track-hover elements" },
             { event: "tab_hidden / tab_visible", desc: "Tab visibility changes" },
-            { event: "component_viewed", desc: "ai-optimize component in view" },
+            { event: "component_viewed", desc: "ai-opt component in view" },
           ].map((item) => (
             <div key={item.event} className="glass rounded-lg p-3 border border-border/50 flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
@@ -76,55 +76,6 @@ export default function ApiReferencePage() {
         <p className="text-sm text-muted-foreground mt-8">
           For REST API documentation, see the FastAPI docs at <code className="bg-black/30 px-1.5 py-0.5 rounded text-xs">/docs</code> on the API server.
         </p>
-      </section>
-
-      {/* Variants Data Structure */}
-      <section id="variants" className="mt-16 scroll-mt-24">
-        <h2 className="text-2xl font-semibold mb-6">Variants Data Structure</h2>
-        <p className="text-muted-foreground mb-6">
-          Each user has variant data stored with scoring history for optimization:
-        </p>
-
-        <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50">
-          <pre className="text-sm font-mono">
-            <code className="text-emerald-400">{`{
-  "user_id": "12345",
-
-  "variants": {
-    "A": {
-      "current_html": "<div>...</div>",
-      "current_score": 4.3,
-
-      "history": [
-        {
-          "html": "<div>old version...</div>",
-          "score": 3.2,
-          "timestamp": "2026-01-17T20:00:00Z"
-        },
-        {
-          "html": "<div>another version...</div>",
-          "score": 4.1,
-          "timestamp": "2026-01-17T21:00:00Z"
-        }
-      ]
-    },
-
-    "B": {
-      "current_html": "<div>...</div>",
-      "current_score": 3.0,
-
-      "history": [
-        {
-          "html": "<div>previous B...</div>",
-          "score": 2.7,
-          "timestamp": "2026-01-17T19:30:00Z"
-        }
-      ]
-    }
-  }
-}`}</code>
-          </pre>
-        </div>
       </section>
     </DocsLayout>
   );
