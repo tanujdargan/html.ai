@@ -587,7 +587,7 @@
             }
 
             container.innerHTML = variants.map((v, i) => `
-                <div class="variant-card" onclick="openModal('${escapeHtml(v.html)}', '${v.variant}', '${v.user_id}', ${v.score})">
+                <div class="variant-card" data-variant-index="${i}">
                     <div class="variant-preview">
                         <iframe srcdoc="${escapeHtml(wrapHtml(v.html))}" sandbox="allow-same-origin"></iframe>
                     </div>
@@ -602,6 +602,14 @@
                     </div>
                 </div>
             `).join('');
+
+            // Add click event listeners after rendering
+            container.querySelectorAll('.variant-card').forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    const v = variants[index];
+                    openModal(v.html, v.variant, v.user_id, v.score);
+                });
+            });
         }
 
         function wrapHtml(html) {
