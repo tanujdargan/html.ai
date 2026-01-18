@@ -16,13 +16,16 @@ Main files:
   _id: ObjectId("696cf416f830279cefe924c6"),
   user_id: "guest",
   components: {
+
     hero: {
+    
       A: {
         current_html: "<div class='section hero'>...</div>",
         current_score: 3,
         number_of_trials: 10,
         history: []
       },
+      
       B: {
         current_html: "<div class='section hero'>... improved ...</div>",
         current_score: 3,
