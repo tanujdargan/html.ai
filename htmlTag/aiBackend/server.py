@@ -436,8 +436,8 @@ This is the larger page structure:
 {contextHtml}
 
 ### Your Task
-Generate a **slightly improved HTML version** for variant {varianceLetter}.
-DO NOT drastically change layout. Make subtle UX / visual / clarity improvements.
+Generate a improved HTML version for variant {varianceLetter}.
+DO NOT drastically change layout. Make subtle UX / visual / clarity improvements to cause more clicks.
 Return ONLY raw HTML — no explanations.
 """
 

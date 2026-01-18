@@ -21,8 +21,7 @@ export class AiOpt extends HTMLElement {
             user_id: ids.user_id,
             component_id: this.componentId,
             changingHtml: this.originalHtml,
-            contextHtml: contextHtml,
-
+            contextHtml
         };
 
         console.log("📤 Sending payload:", payload);
@@ -42,20 +41,14 @@ export class AiOpt extends HTMLElement {
                 return;
             }
 
+            // ✅ Replace HTML
             this.innerHTML = data.changingHtml;
             this.optimized = true;
 
-            // Expose current variant globally and update debug panel
-            window.currentVariant = data.variant;
-            const variantEl = document.getElementById('debug-variant');
-            if (variantEl) {
-                variantEl.textContent = data.variant || '--';
-            }
-
-            // Also update the reward button's variant attribute
-            const rewardBtn = document.getElementById('reward-btn');
+            // ✅ Set reward button variant dynamically
+            const rewardBtn = document.getElementById("reward-btn");
             if (rewardBtn && data.variant) {
-                rewardBtn.setAttribute('variant', data.variant);
+                rewardBtn.setAttribute("variant", data.variant);
             }
 
         } catch (err) {
