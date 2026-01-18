@@ -83,7 +83,6 @@ export default function Comparison() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="rounded-3xl bg-card border border-border p-8 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500/50 to-orange-500/50" />
 
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-2">
@@ -113,14 +112,6 @@ export default function Comparison() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="rounded-3xl bg-gradient-to-b from-primary/10 to-card border-2 border-primary p-8 relative overflow-hidden lg:scale-105 lg:-my-4 shadow-2xl shadow-primary/20"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-primary to-blue-500" />
-
-            {/* Recommended badge */}
-            <div className="absolute top-6 right-6">
-              <span className="px-3 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
-                Recommended
-              </span>
-            </div>
 
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-2 gradient-text">
@@ -160,7 +151,6 @@ export default function Comparison() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="rounded-3xl bg-card border border-border p-8 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500/50 to-amber-500/50" />
 
             <div className="mb-8">
               <h3 className="text-2xl font-semibold mb-2">
