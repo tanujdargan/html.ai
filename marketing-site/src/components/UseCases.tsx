@@ -48,6 +48,17 @@ const useCases = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
 export default function UseCases() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -79,14 +90,38 @@ export default function UseCases() {
         </motion.div>
 
         {/* Masonry grid */}
-        <div className="masonry-grid">
+        <motion.div 
+          className="masonry-grid"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
           {useCases.map((useCase, index) => (
             <motion.div
               key={useCase.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
+              variants={{
+                hidden: { 
+                  opacity: 0, 
+                  x: index % 2 === 0 ? -100 : 100,
+                  scale: 0.8,
+                },
+                visible: { 
+                  opacity: 1, 
+                  x: 0,
+                  scale: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 15,
+                  },
+                },
+              }}
               className="masonry-item"
+              whileHover={{ 
+                scale: 1.03, 
+                y: -8,
+                transition: { type: "spring", stiffness: 400, damping: 20 }
+              }}
             >
               <div
                 className={`${useCase.height} rounded-2xl bg-gradient-to-br ${useCase.gradient} border border-border/50 p-6 flex flex-col justify-between hover:border-primary/50 transition-all cursor-pointer group overflow-hidden relative`}
@@ -125,7 +160,7 @@ export default function UseCases() {
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
