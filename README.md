@@ -15,8 +15,8 @@ Main files:
 html_ai> db.users.find().pretty()
 [
   {
-    _id: ObjectId('696cf416f830279cefe924c6'),
-    user_id: 'guest',
+    _id: ObjectId("696cf416f830279cefe924c6"),
+    user_id: "guest",
     components: {
       hero: {
         A: {
@@ -32,6 +32,7 @@ html_ai> db.users.find().pretty()
           history: []
         }
       },
+
       footer: {
         A: {
           current_html: "<div class='section footer'>...</div>",
