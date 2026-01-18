@@ -471,7 +471,10 @@
     <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h2 id="modal-title">Variant Details</h2>
+                <div>
+                    <h2 id="modal-title">Variant Details</h2>
+                    <p id="modal-user-id" style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.25rem; font-family: monospace;"></p>
+                </div>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -653,6 +656,9 @@
 
             document.getElementById('modal-title').textContent =
                 `Variant ${variant} - Score: ${score}`;
+            
+            document.getElementById('modal-user-id').textContent =
+                `User ID: ${userId}`;
 
             // Set preview iframe
             const frame = document.getElementById('modal-preview-frame');
