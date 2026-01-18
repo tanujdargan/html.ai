@@ -1,0 +1,110 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>AI Multi-Component Reward Demo</title>
+
+    <!-- AI Optimization Tag -->
+    <script type="module" src="./AiOptimizeElement_v2.js"></script>
+
+    <!-- Reward Button Component -->
+    <script type="module" src="./RewardButton.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 40px;
+            background: #fafafa;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: #555;
+            margin-bottom: 32px;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .hero {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .hero img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            background: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        reward-button {
+            display: inline-block;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🧠 AI Multi-Component Optimization</h1>
+    <p class="subtitle">
+        One user action improves multiple AI-controlled components at once.
+    </p>
+
+    <!-- COMPONENT 1: HERO -->
+    <ai-opt experiment="hero-block" component-id="hero">
+        <div class="section hero">
+            <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?q=80&w=600" alt="Shoes">
+            <div>
+                <h2>Comfort Runner Shoes</h2>
+                <p>Ultra-light running shoes designed for everyday comfort.</p>
+                <button class="btn">Shop Now</button>
+            </div>
+        </div>
+    </ai-opt>
+
+    <!-- COMPONENT 2: FOOTER MESSAGE -->
+    <ai-opt experiment="footer-message" component-id="footer">
+        <div class="section footer">
+            <p>Free shipping on orders over $50</p>
+        </div>
+    </ai-opt>
+
+    <!-- SHARED REWARD -->
+    <reward-button
+        variant="A"
+        reward="50"
+        component-ids='["hero","footer"]'>
+        👍 I Like This Page
+    </reward-button>
+
+</body>
+</html>
