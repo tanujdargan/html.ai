@@ -35,6 +35,11 @@
     <h1>Adaptive Identity Demo</h1>
     <p>Custom AI optimization tag demo.</p>
 
+    <div style="margin-bottom: 20px;">
+        <button id="test-tagAi" style="background: #28a745;">Test /tagAi API</button>
+        <span id="api-status" style="margin-left: 10px; color: #666;"></span>
+    </div>
+
     <ai-optimize experiment="hero-cta">
         <div class="box">
             <h2>Welcome to my website</h2>
@@ -52,6 +57,34 @@
             <button>Upgrade</button>
         </div>
     </ai-optimize>
+
+    <script>
+        document.getElementById('test-tagAi').addEventListener('click', async () => {
+            const statusEl = document.getElementById('api-status');
+            statusEl.textContent = 'Setting variant...';
+            statusEl.style.color = '#666';
+
+            try {
+                // Step 1: Set the demo variant
+                const setRes = await fetch('http://localhost:8000/optimize/set-demo/hero-cta');
+                const setData = await setRes.json();
+                console.log('[test] Variant set:', setData);
+
+                // Step 2: Trigger immediate refresh on the element
+                const heroElement = document.querySelector('ai-optimize[experiment="hero-cta"]');
+                if (heroElement && heroElement.refresh) {
+                    heroElement.refresh();
+                }
+
+                statusEl.textContent = 'Variant applied!';
+                statusEl.style.color = '#28a745';
+            } catch (err) {
+                console.error('[test] Error:', err);
+                statusEl.textContent = 'Error: ' + err.message;
+                statusEl.style.color = '#dc3545';
+            }
+        });
+    </script>
 
 </body>
 </html>
