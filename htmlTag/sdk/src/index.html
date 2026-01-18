@@ -1,21 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Demo</title>
+    <meta charset="UTF-8" />
+    <title>AI Shop Demo</title>
 
-    <!-- Load ONLY the ai-opt element -->
+    <!-- AI Optimization Tag -->
     <script type="module" src="./AiOptimizeElement_v2.js"></script>
+
+    <!-- Reward Button Component -->
+    <script type="module" src="./RewardButton.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 40px;
+            background: #fafafa;
+        }
+
+        .hero {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e5e5e5;
+            max-width: 800px;
+        }
+
+        .hero img {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .hero-info h2 {
+            margin: 0 0 8px 0;
+        }
+
+        .hero-info p {
+            margin: 0 0 16px 0;
+            color: #555;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            background: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        reward-button {
+            margin-top: 24px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <ai-opt>
-        <div>
-            <h2>Hello World</h2>
-            <p>This content will be replaced by the backend variant.</p>
+    <h1>🛍️ AI-Optimized Shop Demo</h1>
+    <p>Below is the hero product section that your AI engine will dynamically rewrite.</p>
+
+    <ai-opt experiment="hero-block">
+        <div class="hero">
+            <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?q=80&w=600" alt="Shoes">
+
+            <div class="hero-info">
+                <h2>Comfort Runner Shoes</h2>
+                <p>Ultra-light running shoes designed for all-day comfort.</p>
+                <button class="btn">Shop Now</button>
+            </div>
         </div>
     </ai-opt>
+
+    <!-- Reward button -->
+    <reward-button variant="A" reward="9">
+        Give Reward
+    </reward-button>
 
 </body>
 </html>

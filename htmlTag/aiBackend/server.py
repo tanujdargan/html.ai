@@ -34,24 +34,7 @@ mongodb = mongo_client["html_ai"]
 users_collection = mongodb["users"]  # collection
 
 
-if not users_collection.find_one({"user_id": "sultan"}):
-    users_collection.insert_one({
-        "user_id": "sultan",
-        "variants": {
-            "A": {
-                "current_html": "<div>A</div>",
-                "current_score": 4.3,
-                "number_of_trials": 1,
-                "history": []
-            },
-            "B": {
-                "current_html": "<div>B</div>",
-                "current_score": 3,
-                "number_of_trials": 1,
-                "history": []
-            }
-        }
-    })
+
 # ----------------------------------------
 # Payload Models
 # ----------------------------------------
@@ -86,25 +69,34 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
             "user_id": user_id,
             "variants": {
                 "A": {
-                    "current_html": "<div>A</div>",
-                    "current_score": 4.3,
-                    "number_of_trials": 1,
+                    "current_html": changingHtml,
+                    "current_score": 3,
+                    "number_of_trials": 10,
                     "history": []
                 },
 
                 "B": {
-                    "current_html": "<div>B</div>", #TODO MUST BE DYNAMICs
-                    "current_score": 3.0,
-                    "number_of_trials": 1,
+                    "current_html": changingHtml,
+                    "current_score": 3,
+                    "number_of_trials": 10,
                     "history": []
                 }
             }
         })
-        print("insert")
+        # 2. Now that user exists → generate variant B using RAG
+        new_b_html = AIRags(user_id, contextHtml, "B", "A")
+
+        # 3. Save the newly generated B HTML back to MongoDB
+        users_collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"variants.B.current_html": new_b_html}}
+        )
+
+
 
         return {
             "status": "ok:new-user",
-            "changingHtml": "<div>A</div>",
+            "changingHtml": changingHtml,
             "variant": "A"
         }
 
@@ -259,6 +251,36 @@ def reRender(user_id: str, VariantLetter: str, opposingVariantLetter:str, contex
     )
 
     print(mongodb["users"].find_one({"user_id": user_id}))
+
+    reset_scores_to_midpoint(user_id)
+
+
+def reset_scores_to_midpoint(user_id: str):
+    user = users_collection.find_one({"user_id": user_id})
+
+    if not user:
+        print("⚠️ User not found for midpoint reset.")
+        return
+
+    A_score = user["variants"]["A"]["current_score"]
+    B_score = user["variants"]["B"]["current_score"]
+
+    new_score = (A_score + B_score) / 2
+
+    # Update scores & reset trials back to 0
+    users_collection.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "variants.A.current_score": new_score,
+                "variants.B.current_score": new_score,
+                "variants.A.number_of_trials": 0,
+                "variants.B.number_of_trials": 0
+            }
+        }
+    )
+
+    print(f"🔄 Reset scores → midpoint = {new_score:.4f}")
 
 def AIRags(
     user_id: str,
