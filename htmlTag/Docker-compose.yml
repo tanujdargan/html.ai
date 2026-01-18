@@ -1,5 +1,8 @@
 version: "3.9"
 
+# Load environment variables from .env file
+# Create a .env file with: GEMINI_API_KEY=your_key_here
+
 services:
   mongo:
     image: mongo:6
@@ -11,13 +14,17 @@ services:
       - mongo_data:/data/db
 
   engine:
-    build: ./aiBackend   # <--- Your fai server
+    build:
+      context: ./aiBackend
+      dockerfile: Dockerfile_integrated
     container_name: adaptive_engine
     restart: always
     ports:
       - "3000:3000"
     depends_on:
       - mongo
+    env_file:
+      - .env
     environment:
       MONGO_URL: mongodb://mongo:27017/adaptive_identity
 

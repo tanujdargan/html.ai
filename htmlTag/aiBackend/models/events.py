@@ -9,6 +9,7 @@ from enum import Enum
 
 class EventType(str, Enum):
     """Supported event types"""
+    # Core events
     PAGE_VIEWED = "page_viewed"
     COMPONENT_VIEWED = "component_viewed"
     SCROLL_DEPTH_REACHED = "scroll_depth_reached"
@@ -18,6 +19,47 @@ class EventType(str, Enum):
     ADD_TO_CART = "add_to_cart"
     CONVERSION_COMPLETED = "conversion_completed"
     VARIANT_SHOWN = "variant_shown"
+
+    # Mouse tracking
+    MOUSE_HESITATION = "mouse_hesitation"
+    MOUSE_IDLE_START = "mouse_idle_start"
+    MOUSE_IDLE_END = "mouse_idle_end"
+
+    # Scroll tracking
+    SCROLL_DIRECTION_CHANGE = "scroll_direction_change"
+    SCROLL_FAST = "scroll_fast"
+    SCROLL_PAUSE = "scroll_pause"
+
+    # Click tracking
+    RAGE_CLICK = "rage_click"
+    DEAD_CLICK = "dead_click"
+    RIGHT_CLICK = "right_click"
+    DOUBLE_CLICK = "double_click"
+
+    # Hover tracking
+    HOVER = "hover"
+    HOVER_END = "hover_end"
+
+    # Visibility tracking
+    TAB_HIDDEN = "tab_hidden"
+    TAB_VISIBLE = "tab_visible"
+    WINDOW_BLUR = "window_blur"
+    WINDOW_FOCUS = "window_focus"
+
+    # Form tracking
+    FIELD_FOCUS = "field_focus"
+    FIELD_BLUR = "field_blur"
+    FIELD_PASTE = "field_paste"
+    FORM_SUBMIT = "form_submit"
+
+    # Navigation tracking
+    FIRST_INTERACTION = "first_interaction"
+    PAGE_EXIT_INTENT = "page_exit_intent"
+    EXTERNAL_LINK_CLICK = "external_link_click"
+    BACK_NAVIGATION = "back_navigation"
+
+    # Product tracking
+    PRODUCT_CLICK = "product_click"
 
 
 class Event(BaseModel):
