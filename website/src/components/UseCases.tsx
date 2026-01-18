@@ -6,44 +6,56 @@ import { useRef } from "react";
 const useCases = [
   {
     id: 1,
-    title: "Retail & E-commerce",
-    category: "Industry",
-    height: "h-80",
+    title: "Hyper-Personalization",
+    subtitle: "The \"Segment of One\"",
+    description: "Optimize for individuals, not averages. The engine maintains a profile for each user—if they prefer dark mode, high-density data, and technical jargon, the AI generates that specific UI every visit.",
+    highlight: "Maximize conversion probability for every single session dynamically.",
+    height: "h-auto",
     gradient: "from-violet-500/20 to-purple-600/20",
   },
   {
     id: 2,
-    title: "SaaS Platforms",
-    category: "Industry",
-    height: "h-72",
+    title: "Context-Aware Adaptation",
+    subtitle: "Beyond On-Site Behavior",
+    description: "Expand inputs to include environmental context. UI changes based on time (\"Late night snack?\" vs \"Lunch special\"), location, and user preferences for ambience or places.",
+    highlight: "Dynamic SERP alignment rewrites H1s to match search intent perfectly.",
+    height: "h-auto",
     gradient: "from-blue-500/20 to-cyan-500/20",
   },
   {
     id: 3,
-    title: "News & Media",
-    category: "Niche",
-    height: "h-96",
+    title: "Rage Click Detection",
+    subtitle: "Frustration Response",
+    description: "Detects rage clicking or rapid scrolling as signs of frustration. Instead of just trying a new design, it triggers \"simplification mode\"—minimal UI, removed distractions, clear help button.",
+    highlight: "Turn frustrated users into converted customers.",
+    height: "h-auto",
     gradient: "from-amber-500/20 to-orange-500/20",
   },
   {
     id: 4,
-    title: "Healthcare",
-    category: "Industry",
-    height: "h-64",
+    title: "Cross-Site Federated Learning",
+    subtitle: "Shared Intelligence",
+    description: "Deploy across multiple websites to learn universal truths. If \"Green Buttons\" perform poorly across fashion sites this week, preemptively stop suggesting them for new clients.",
+    highlight: "Jump-start optimization for new clients in the same vertical.",
+    height: "h-auto",
     gradient: "from-emerald-500/20 to-teal-500/20",
   },
   {
     id: 5,
-    title: "Gen Z Users",
-    category: "Demographic",
-    height: "h-72",
+    title: "Framework Agnostic",
+    subtitle: "Works Everywhere",
+    description: "Integrate with any frontend—React, Vue, Angular, Swift, Flutter, or vanilla HTML. Our SDK adapts to your stack, not the other way around.",
+    highlight: "One platform, every framework.",
+    height: "h-auto",
     gradient: "from-pink-500/20 to-rose-500/20",
   },
   {
     id: 6,
-    title: "Enterprise B2B",
-    category: "Demographic",
-    height: "h-64",
+    title: "Real-Time Intent Matching",
+    subtitle: "Search Query Alignment",
+    description: "When a user lands via \"durable hiking boots\", the engine instantly rewrites headlines and descriptions to emphasize durability and hiking—matching intent perfectly.",
+    highlight: "Convert searchers by speaking their language.",
+    height: "h-auto",
     gradient: "from-purple-500/20 to-fuchsia-500/20",
   },
 ];
@@ -81,17 +93,17 @@ export default function UseCases() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6">
-            <span className="gradient-text">Adapt for Anything</span>
+            <span className="gradient-text">Beyond A/B Testing</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Any niche, industry, demographic. Build experiences that resonate
-            with every user segment.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Stop optimizing for the average user. Our AI creates a unique experience
+            for every individual, adapting in real-time to context, intent, and behavior.
           </p>
         </motion.div>
 
-        {/* Masonry grid */}
-        <motion.div 
-          className="masonry-grid"
+        {/* Grid */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -100,14 +112,14 @@ export default function UseCases() {
             <motion.div
               key={useCase.id}
               variants={{
-                hidden: { 
-                  opacity: 0, 
-                  x: index % 2 === 0 ? -100 : 100,
-                  scale: 0.8,
+                hidden: {
+                  opacity: 0,
+                  y: 40,
+                  scale: 0.95,
                 },
-                visible: { 
-                  opacity: 1, 
-                  x: 0,
+                visible: {
+                  opacity: 1,
+                  y: 0,
                   scale: 1,
                   transition: {
                     type: "spring",
@@ -116,47 +128,33 @@ export default function UseCases() {
                   },
                 },
               }}
-              className="masonry-item"
-              whileHover={{ 
-                scale: 1.03, 
-                y: -8,
+              whileHover={{
+                scale: 1.02,
+                y: -4,
                 transition: { type: "spring", stiffness: 400, damping: 20 }
               }}
             >
               <div
-                className={`${useCase.height} rounded-2xl bg-gradient-to-br ${useCase.gradient} border border-border/50 p-6 flex flex-col justify-between hover:border-primary/50 transition-all cursor-pointer group overflow-hidden relative`}
+                className={`${useCase.height} rounded-2xl bg-gradient-to-br ${useCase.gradient} border border-border/50 p-6 flex flex-col hover:border-primary/50 transition-all cursor-pointer group overflow-hidden relative`}
               >
-                {/* Placeholder for GIF/visual content */}
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="w-full h-full rounded-xl bg-black/20 flex items-center justify-center">
-                    <svg
-                      className="w-12 h-12 text-white/30 group-hover:text-white/50 transition-colors"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
                 {/* Card content */}
-                <div className="mt-4">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    {useCase.category}
+                <div>
+                  <span className="text-xs text-primary uppercase tracking-wider font-medium">
+                    {useCase.subtitle}
                   </span>
-                  <h3 className="text-lg font-semibold mt-1 group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-semibold mt-2 group-hover:text-primary transition-colors">
                     {useCase.title}
                   </h3>
+                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                    {useCase.description}
+                  </p>
+                  <p className="text-sm text-foreground mt-4 font-medium border-l-2 border-primary pl-3">
+                    {useCase.highlight}
+                  </p>
                 </div>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               </div>
             </motion.div>
           ))}
