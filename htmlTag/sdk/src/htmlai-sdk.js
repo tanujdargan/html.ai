@@ -22,6 +22,7 @@
     // ========================================
     const CONFIG = {
         apiKey: null,
+        businessId: null,  // Will be derived from API key or fetched
         apiBaseUrl: 'http://localhost:3000',
         trackingDomain: 'http://localhost:3000',  // Central sync domain
         userIdCookie: 'htmlai_uid',
@@ -525,6 +526,18 @@
                 // Don't return - allow manual initialization later
             }
 
+            // Derive business ID from API key pattern or fetch it
+            // API keys follow pattern: pk_demo_shoes_123 -> biz_shoes
+            if (CONFIG.apiKey && !CONFIG.businessId) {
+                const match = CONFIG.apiKey.match(/pk_demo_(\w+)_/);
+                if (match) {
+                    CONFIG.businessId = 'biz_' + match[1];
+                } else {
+                    // Default fallback - will be updated when we fetch from server
+                    CONFIG.businessId = 'unknown';
+                }
+            }
+
             log('Initializing with config:', CONFIG);
 
             // Initialize modules
@@ -545,6 +558,110 @@
         // Manual tracking
         track(eventName, componentId, properties) {
             EventTracker.track(eventName, componentId, properties);
+        },
+
+        // A/B Testing Scoring
+        async scoreInteraction(componentId, interactionType, variant = null) {
+            const ids = UserManager.getIds();
+            const activeVariant = variant || document.querySelector(`[component-id="${componentId}"]`)?.getAttribute('data-active-variant') || 'A';
+
+            try {
+                const response = await fetch(`${CONFIG.apiBaseUrl}/api/scoring/interaction`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': CONFIG.apiKey
+                    },
+                    body: JSON.stringify({
+                        user_id: ids.user_id,
+                        component_id: componentId,
+                        interaction_type: interactionType,
+                        variant: activeVariant,
+                        properties: {}
+                    })
+                });
+
+                const result = await response.json();
+                log('Interaction scored:', componentId, interactionType, result);
+
+                // Emit event if regeneration triggered
+                if (result.should_regenerate) {
+                    window.dispatchEvent(new CustomEvent('htmlai:regenerate', {
+                        detail: {
+                            componentId,
+                            variant: result.regenerate_variant,
+                            scoreDiff: result.score_difference
+                        }
+                    }));
+                }
+
+                return result;
+            } catch (err) {
+                console.error('[html.ai] Score tracking failed:', err);
+                return null;
+            }
+        },
+
+        // Reward a component (triggers scoring + potential regeneration)
+        async rewardComponent(componentId, reward = 1, interactionType = 'conversion', contextHtml = '') {
+            const ids = UserManager.getIds();
+            const element = document.querySelector(`[component-id="${componentId}"]`);
+            const activeVariant = element?.getAttribute('data-active-variant') || 'A';
+
+            try {
+                const response = await fetch(`${CONFIG.apiBaseUrl}/api/component/reward`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': CONFIG.apiKey
+                    },
+                    body: JSON.stringify({
+                        user_id: ids.user_id,
+                        component_id: componentId,
+                        variant: activeVariant,
+                        reward: reward,
+                        context_html: contextHtml || element?.outerHTML || '',
+                        interaction_type: interactionType
+                    })
+                });
+
+                const result = await response.json();
+                log('Component rewarded:', componentId, result);
+
+                return result;
+            } catch (err) {
+                console.error('[html.ai] Reward failed:', err);
+                return null;
+            }
+        },
+
+        // Get component with A/B variant
+        async getComponent(componentId, html, contextHtml = '') {
+            const ids = UserManager.getIds();
+
+            try {
+                const response = await fetch(`${CONFIG.apiBaseUrl}/api/component/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': CONFIG.apiKey
+                    },
+                    body: JSON.stringify({
+                        user_id: ids.user_id,
+                        component_id: componentId,
+                        changing_html: html,
+                        context_html: contextHtml
+                    })
+                });
+
+                const result = await response.json();
+                log('Component generated:', componentId, result.variant);
+
+                return result;
+            } catch (err) {
+                console.error('[html.ai] Component generation failed:', err);
+                return { html, variant: 'A', status: 'fallback' };
+            }
         },
 
         // Get user IDs

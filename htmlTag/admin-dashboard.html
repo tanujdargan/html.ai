@@ -246,6 +246,7 @@
         <a class="nav-item active" onclick="showSection('overview')">Overview</a>
         <a class="nav-item" onclick="showSection('events')">Live Events</a>
         <a class="nav-item" onclick="showSection('users')">Users</a>
+        <a class="nav-item" onclick="showSection('scoring')">Scoring</a>
         <a class="nav-item" onclick="showSection('cross-site')">Cross-Site</a>
         <a class="nav-item" onclick="showSection('partners')">Data Partners</a>
         <a class="nav-item" onclick="showSection('settings')">Settings</a>
@@ -344,6 +345,156 @@
                 <div id="user-journey-result">
                     <p style="color:#64748b;">Enter a user ID above to view their journey</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- Scoring Section -->
+        <section id="scoring" class="section">
+            <div class="header">
+                <h1>Scoring Settings</h1>
+                <button class="refresh-btn" onclick="loadScoring()">Refresh</button>
+            </div>
+
+            <div class="alert alert-info">
+                Adjust the weight multipliers for each interaction type. Higher weights mean more impact on variant scores.
+                When the score difference between variants exceeds the threshold, the losing variant is regenerated.
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Score Threshold</h3>
+                    <div class="value yellow" id="stat-threshold">5.0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Components</h3>
+                    <div class="value blue" id="stat-components">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Regenerations</h3>
+                    <div class="value green" id="stat-regenerations">-</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Threshold Settings</h2>
+                <div class="form-group">
+                    <label>Regeneration Threshold <span id="threshold-value-display" style="color:#38bdf8;">(5.0)</span></label>
+                    <input type="range" id="threshold-slider" min="1" max="20" step="0.5" value="5"
+                           style="width:100%;accent-color:#38bdf8;" onchange="updateThresholdDisplay()">
+                    <p style="color:#64748b;font-size:0.75rem;margin-top:0.25rem;">
+                        When score difference exceeds this value, the losing variant is regenerated
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Positive Interaction Weights <span class="badge active">Increase Score</span></h2>
+                <div style="display:grid;gap:1rem;margin-top:1rem;">
+                    <div class="weight-slider" data-weight="click">
+                        <label>Click <span class="weight-value" style="color:#4ade80;">(1.0)</span></label>
+                        <input type="range" min="0" max="10" step="0.5" value="1" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Basic click on any element</p>
+                    </div>
+                    <div class="weight-slider" data-weight="cta_click">
+                        <label>CTA Click <span class="weight-value" style="color:#4ade80;">(3.0)</span></label>
+                        <input type="range" min="0" max="10" step="0.5" value="3" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Call-to-action button clicks (high value)</p>
+                    </div>
+                    <div class="weight-slider" data-weight="add_to_cart">
+                        <label>Add to Cart <span class="weight-value" style="color:#4ade80;">(5.0)</span></label>
+                        <input type="range" min="0" max="15" step="0.5" value="5" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Strong purchase intent signal</p>
+                    </div>
+                    <div class="weight-slider" data-weight="purchase">
+                        <label>Purchase <span class="weight-value" style="color:#4ade80;">(10.0)</span></label>
+                        <input type="range" min="0" max="20" step="0.5" value="10" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Conversion - highest value action</p>
+                    </div>
+                    <div class="weight-slider" data-weight="form_submit">
+                        <label>Form Submit <span class="weight-value" style="color:#4ade80;">(4.0)</span></label>
+                        <input type="range" min="0" max="10" step="0.5" value="4" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Form submission (leads, signup forms)</p>
+                    </div>
+                    <div class="weight-slider" data-weight="signup">
+                        <label>Signup <span class="weight-value" style="color:#4ade80;">(6.0)</span></label>
+                        <input type="range" min="0" max="15" step="0.5" value="6" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">User registration</p>
+                    </div>
+                    <div class="weight-slider" data-weight="share">
+                        <label>Share <span class="weight-value" style="color:#4ade80;">(2.0)</span></label>
+                        <input type="range" min="0" max="10" step="0.5" value="2" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Social share actions</p>
+                    </div>
+                    <div class="weight-slider" data-weight="hover_long">
+                        <label>Long Hover <span class="weight-value" style="color:#4ade80;">(0.5)</span></label>
+                        <input type="range" min="0" max="5" step="0.1" value="0.5" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Hover &gt; 2 seconds - engagement signal</p>
+                    </div>
+                    <div class="weight-slider" data-weight="video_complete">
+                        <label>Video Complete <span class="weight-value" style="color:#4ade80;">(3.0)</span></label>
+                        <input type="range" min="0" max="10" step="0.5" value="3" style="width:100%;accent-color:#4ade80;">
+                        <p style="color:#64748b;font-size:0.75rem;">Watched video to completion</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Negative Interaction Weights <span class="badge" style="background:#7f1d1d;color:#f87171;">Decrease Score</span></h2>
+                <div style="display:grid;gap:1rem;margin-top:1rem;">
+                    <div class="weight-slider" data-weight="bounce">
+                        <label>Bounce <span class="weight-value" style="color:#f87171;">(-2.0)</span></label>
+                        <input type="range" min="-10" max="0" step="0.5" value="-2" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">User left quickly</p>
+                    </div>
+                    <div class="weight-slider" data-weight="rage_click">
+                        <label>Rage Click <span class="weight-value" style="color:#f87171;">(-1.5)</span></label>
+                        <input type="range" min="-10" max="0" step="0.5" value="-1.5" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">Frustration signal - rapid repeated clicks</p>
+                    </div>
+                    <div class="weight-slider" data-weight="dead_click">
+                        <label>Dead Click <span class="weight-value" style="color:#f87171;">(-0.5)</span></label>
+                        <input type="range" min="-5" max="0" step="0.1" value="-0.5" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">Click on non-interactive element</p>
+                    </div>
+                    <div class="weight-slider" data-weight="scroll_fast">
+                        <label>Fast Scroll <span class="weight-value" style="color:#f87171;">(-0.3)</span></label>
+                        <input type="range" min="-5" max="0" step="0.1" value="-0.3" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">Skimming content, not engaged</p>
+                    </div>
+                    <div class="weight-slider" data-weight="exit_intent">
+                        <label>Exit Intent <span class="weight-value" style="color:#f87171;">(-1.0)</span></label>
+                        <input type="range" min="-5" max="0" step="0.5" value="-1" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">Mouse moved to close tab</p>
+                    </div>
+                    <div class="weight-slider" data-weight="tab_switch">
+                        <label>Tab Switch <span class="weight-value" style="color:#f87171;">(-0.2)</span></label>
+                        <input type="range" min="-5" max="0" step="0.1" value="-0.2" style="width:100%;accent-color:#f87171;">
+                        <p style="color:#64748b;font-size:0.75rem;">Lost attention to another tab</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Component Leaderboard</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component ID</th>
+                            <th>Variant A Score</th>
+                            <th>Variant B Score</th>
+                            <th>Winner</th>
+                            <th>Regenerations</th>
+                        </tr>
+                    </thead>
+                    <tbody id="component-leaderboard">
+                        <tr><td colspan="5" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                <button class="btn btn-success" onclick="saveWeights()">Save All Weights</button>
+                <button class="btn btn-secondary" onclick="resetWeights()">Reset to Defaults</button>
             </div>
         </section>
 
@@ -479,6 +630,7 @@
             if (sectionId === 'overview') loadDashboard();
             if (sectionId === 'events') loadEvents();
             if (sectionId === 'users') loadUsers();
+            if (sectionId === 'scoring') loadScoring();
             if (sectionId === 'cross-site') loadCrossSite();
             if (sectionId === 'partners') loadPartners();
             if (sectionId === 'settings') loadSettings();
@@ -865,6 +1017,189 @@
             } catch (err) {
                 alert('Failed to accept');
             }
+        }
+
+        // ========================================
+        // Scoring Section Functions
+        // ========================================
+
+        // Default weights from the scoring model
+        const DEFAULT_WEIGHTS = {
+            click: 1.0,
+            cta_click: 3.0,
+            add_to_cart: 5.0,
+            purchase: 10.0,
+            form_submit: 4.0,
+            signup: 6.0,
+            share: 2.0,
+            save: 2.5,
+            hover_long: 0.5,
+            scroll_to_bottom: 1.5,
+            video_play: 1.0,
+            video_complete: 3.0,
+            bounce: -2.0,
+            rage_click: -1.5,
+            dead_click: -0.5,
+            scroll_fast: -0.3,
+            exit_intent: -1.0,
+            tab_switch: -0.2,
+            page_view: 0.1,
+            component_view: 0.2,
+            scroll: 0.05,
+            mouse_move: 0.0
+        };
+
+        let currentWeights = { ...DEFAULT_WEIGHTS };
+        let currentThreshold = 5.0;
+
+        function updateThresholdDisplay() {
+            const slider = document.getElementById('threshold-slider');
+            const display = document.getElementById('threshold-value-display');
+            display.textContent = `(${parseFloat(slider.value).toFixed(1)})`;
+            currentThreshold = parseFloat(slider.value);
+        }
+
+        async function loadScoring() {
+            // Load current weights from server
+            try {
+                const res = await fetch(`${API_URL}/api/scoring/weights`, {
+                    headers: { 'X-API-Key': currentApiKey }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.weights) {
+                        currentWeights = { ...DEFAULT_WEIGHTS, ...data.weights };
+                    }
+                    if (data.score_threshold) {
+                        currentThreshold = data.score_threshold;
+                        document.getElementById('threshold-slider').value = currentThreshold;
+                        document.getElementById('threshold-value-display').textContent = `(${currentThreshold.toFixed(1)})`;
+                        document.getElementById('stat-threshold').textContent = currentThreshold.toFixed(1);
+                    }
+                }
+            } catch (err) {
+                console.log('Could not load weights, using defaults');
+            }
+
+            // Update all sliders with current values
+            document.querySelectorAll('.weight-slider').forEach(slider => {
+                const weightName = slider.dataset.weight;
+                const input = slider.querySelector('input[type="range"]');
+                const valueDisplay = slider.querySelector('.weight-value');
+
+                if (currentWeights[weightName] !== undefined) {
+                    input.value = currentWeights[weightName];
+                    const val = currentWeights[weightName];
+                    valueDisplay.textContent = `(${val >= 0 ? val.toFixed(1) : val.toFixed(1)})`;
+                }
+
+                // Add change listener
+                input.addEventListener('input', function() {
+                    const val = parseFloat(this.value);
+                    valueDisplay.textContent = `(${val >= 0 ? val.toFixed(1) : val.toFixed(1)})`;
+                    currentWeights[weightName] = val;
+                });
+            });
+
+            // Load component leaderboard
+            loadComponentLeaderboard();
+        }
+
+        async function loadComponentLeaderboard() {
+            const tbody = document.getElementById('component-leaderboard');
+
+            try {
+                const res = await fetch(`${API_URL}/api/scoring/leaderboard?limit=10`, {
+                    headers: { 'X-API-Key': currentApiKey }
+                });
+
+                if (!res.ok) throw new Error('Failed to load');
+
+                const data = await res.json();
+
+                if (data.leaderboard && data.leaderboard.length > 0) {
+                    let totalRegens = 0;
+                    tbody.innerHTML = data.leaderboard.map(item => {
+                        const scoreA = item.variant_a?.current_score || 0;
+                        const scoreB = item.variant_b?.current_score || 0;
+                        const winner = scoreA > scoreB ? 'A' : (scoreB > scoreA ? 'B' : 'Tie');
+                        const regens = item.regeneration_count || 0;
+                        totalRegens += regens;
+
+                        return `
+                            <tr>
+                                <td>${item.component_id}</td>
+                                <td style="color:#667eea;">${scoreA.toFixed(2)}</td>
+                                <td style="color:#e74c3c;">${scoreB.toFixed(2)}</td>
+                                <td><span class="badge ${winner === 'A' ? 'active' : (winner === 'B' ? '' : 'pending')}">${winner}</span></td>
+                                <td>${regens}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    document.getElementById('stat-components').textContent = data.leaderboard.length;
+                    document.getElementById('stat-regenerations').textContent = totalRegens;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">No scoring data yet. Interact with the demo stores to generate scores.</td></tr>';
+                    document.getElementById('stat-components').textContent = '0';
+                    document.getElementById('stat-regenerations').textContent = '0';
+                }
+            } catch (err) {
+                console.error('Failed to load leaderboard:', err);
+                tbody.innerHTML = '<tr><td colspan="5" style="color:#f87171;">Failed to load leaderboard</td></tr>';
+            }
+        }
+
+        async function saveWeights() {
+            try {
+                const res = await fetch(`${API_URL}/api/scoring/weights`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': currentApiKey
+                    },
+                    body: JSON.stringify({
+                        weights: currentWeights,
+                        score_threshold: currentThreshold
+                    })
+                });
+
+                if (res.ok) {
+                    alert('Weights saved successfully!');
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                alert('Failed to save weights: ' + err.message);
+            }
+        }
+
+        function resetWeights() {
+            if (!confirm('Reset all weights to default values?')) return;
+
+            currentWeights = { ...DEFAULT_WEIGHTS };
+            currentThreshold = 5.0;
+
+            // Update threshold
+            document.getElementById('threshold-slider').value = 5.0;
+            document.getElementById('threshold-value-display').textContent = '(5.0)';
+
+            // Update all sliders
+            document.querySelectorAll('.weight-slider').forEach(slider => {
+                const weightName = slider.dataset.weight;
+                const input = slider.querySelector('input[type="range"]');
+                const valueDisplay = slider.querySelector('.weight-value');
+
+                if (DEFAULT_WEIGHTS[weightName] !== undefined) {
+                    input.value = DEFAULT_WEIGHTS[weightName];
+                    const val = DEFAULT_WEIGHTS[weightName];
+                    valueDisplay.textContent = `(${val >= 0 ? val.toFixed(1) : val.toFixed(1)})`;
+                }
+            });
+
+            // Save reset weights
+            saveWeights();
         }
     </script>
 </body>

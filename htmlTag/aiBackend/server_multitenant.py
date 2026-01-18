@@ -520,36 +520,48 @@ async def link_user(
     Link a business's local UID to the global UID
     Called by SDK after sync iframe returns global UID
     """
-    if not global_uid:
-        global_uid = generate_global_uid()
+    try:
+        if not global_uid:
+            global_uid = generate_global_uid()
 
-    # Update or create global user
-    global_users_collection.update_one(
-        {"global_uid": global_uid},
-        {
-            "$set": {
-                f"business_uids.{request.business_id}": request.local_uid,
-                "last_seen": datetime.utcnow(),
-                "last_business_id": request.business_id
-            },
-            "$setOnInsert": {
+        # Check if user already exists
+        existing = global_users_collection.find_one({"global_uid": global_uid})
+
+        if existing:
+            # Update existing user
+            global_users_collection.update_one(
+                {"global_uid": global_uid},
+                {
+                    "$set": {
+                        f"business_uids.{request.business_id}": request.local_uid,
+                        "last_seen": datetime.utcnow(),
+                        "last_business_id": request.business_id
+                    },
+                    "$inc": {
+                        "aggregated_profile.cross_site_visits": 1
+                    }
+                }
+            )
+        else:
+            # Create new user
+            global_users_collection.insert_one({
                 "global_uid": global_uid,
+                "business_uids": {request.business_id: request.local_uid},
                 "first_seen": datetime.utcnow(),
+                "last_seen": datetime.utcnow(),
+                "last_business_id": request.business_id,
                 "aggregated_profile": {
                     "behavioral_tendency": None,
                     "engagement_level": None,
-                    "cross_site_visits": 0,
+                    "cross_site_visits": 1,
                     "total_conversions": 0
                 }
-            },
-            "$inc": {
-                "aggregated_profile.cross_site_visits": 1
-            }
-        },
-        upsert=True
-    )
+            })
 
-    return {"global_uid": global_uid, "linked": True}
+        return {"global_uid": global_uid, "linked": True}
+    except Exception as e:
+        print(f"Error in sync/link: {e}")
+        return {"global_uid": global_uid, "linked": False, "error": str(e)}
 
 
 # ----------------------------------------
@@ -807,30 +819,77 @@ async def get_cross_site_analytics(business: Business = Depends(verify_api_key))
     }
 
 
+@app.get("/api/users")
+async def list_users(
+    business: Business = Depends(verify_api_key),
+    limit: int = 50
+):
+    """List all users for this business"""
+    try:
+        users = list(users_collection.find(
+            {"business_id": business.business_id},
+            {"user_id": 1, "created_at": 1, "_id": 0}
+        ).limit(limit))
+
+        # Also get unique users from events
+        event_users = events_collection.distinct(
+            "user_id",
+            {"business_id": business.business_id}
+        )
+
+        return {
+            "business_id": business.business_id,
+            "users_from_collection": users,
+            "users_from_events": event_users[:limit],
+            "total_in_events": len(event_users)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/user/{user_id}/journey")
 async def get_user_journey(
     user_id: str,
     business: Business = Depends(verify_api_key)
 ):
     """Get user journey for this business"""
-    user = users_collection.find_one({
-        "business_id": business.business_id,
-        "user_id": user_id
-    })
+    try:
+        user = users_collection.find_one({
+            "business_id": business.business_id,
+            "user_id": user_id
+        })
 
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        if not user:
+            # Try to find in events even if no user record
+            event_count = events_collection.count_documents({
+                "business_id": business.business_id,
+                "user_id": user_id
+            })
+            if event_count == 0:
+                raise HTTPException(status_code=404, detail=f"User {user_id} not found for business {business.business_id}")
 
-    events = list(events_collection.find({
-        "business_id": business.business_id,
-        "user_id": user_id
-    }).sort("timestamp", 1).limit(100))
+        events = list(events_collection.find({
+            "business_id": business.business_id,
+            "user_id": user_id
+        }).sort("timestamp", 1).limit(100))
 
-    return {
-        "user_id": user_id,
-        "session": user.get("last_session", {}),
-        "events": [serialize_doc(e) for e in events]
-    }
+        session_data = {}
+        if user:
+            session_data = user.get("last_session", {})
+
+        return {
+            "user_id": user_id,
+            "business_id": business.business_id,
+            "session": serialize_doc(session_data),
+            "events": [serialize_doc(e) for e in events],
+            "event_count": len(events)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Error in get_user_journey: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/user/{user_id}/cross-site-profile")
@@ -1097,13 +1156,628 @@ def mock_process_session(
 
 
 def serialize_doc(doc: Dict) -> Dict:
-    """Serialize MongoDB document"""
-    if "_id" in doc:
-        doc["_id"] = str(doc["_id"])
+    """Serialize MongoDB document - handles nested objects and datetime"""
+    if doc is None:
+        return {}
+
+    result = {}
     for key, value in doc.items():
-        if hasattr(value, 'isoformat'):
-            doc[key] = value.isoformat()
-    return doc
+        if key == "_id":
+            result[key] = str(value)
+        elif hasattr(value, 'isoformat'):
+            result[key] = value.isoformat()
+        elif isinstance(value, dict):
+            result[key] = serialize_doc(value)
+        elif isinstance(value, list):
+            result[key] = [serialize_doc(item) if isinstance(item, dict) else
+                          (item.isoformat() if hasattr(item, 'isoformat') else item)
+                          for item in value]
+        else:
+            result[key] = value
+    return result
+
+
+# ----------------------------------------
+# Scoring System - A/B Testing with Weighted Interactions
+# ----------------------------------------
+from models.scoring import (
+    DEFAULT_WEIGHTS, DEFAULT_SCORE_THRESHOLD,
+    calculate_score_delta, should_trigger_regeneration
+)
+
+# Collections for scoring
+scores_collection = db["user_scores"]
+weights_collection = db["scoring_weights"]
+
+# Create indexes for scoring
+safe_create_index(scores_collection, [("business_id", 1), ("user_id", 1), ("component_id", 1)])
+
+
+def get_business_weights(business_id: str) -> Dict[str, Any]:
+    """Get scoring weights for a business (or defaults)"""
+    weights_doc = weights_collection.find_one({"business_id": business_id})
+    if weights_doc:
+        return {
+            "weights": weights_doc.get("weights", DEFAULT_WEIGHTS),
+            "score_threshold": weights_doc.get("score_threshold", DEFAULT_SCORE_THRESHOLD)
+        }
+    return {
+        "weights": DEFAULT_WEIGHTS.copy(),
+        "score_threshold": DEFAULT_SCORE_THRESHOLD
+    }
+
+
+def get_or_create_user_scores(business_id: str, user_id: str, component_id: str) -> Dict:
+    """Get or create score tracking for a user/component"""
+    scores = scores_collection.find_one({
+        "business_id": business_id,
+        "user_id": user_id,
+        "component_id": component_id
+    })
+
+    if not scores:
+        scores = {
+            "business_id": business_id,
+            "user_id": user_id,
+            "component_id": component_id,
+            "variant_a": {
+                "current_score": 0.0,
+                "interaction_count": 0,
+                "last_interaction": None
+            },
+            "variant_b": {
+                "current_score": 0.0,
+                "interaction_count": 0,
+                "last_interaction": None
+            },
+            "active_variant": "A",
+            "regeneration_count": 0,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        scores_collection.insert_one(scores)
+
+    return scores
+
+
+class ScoreInteractionRequest(BaseModel):
+    """Request to score an interaction"""
+    user_id: str
+    component_id: str
+    interaction_type: str  # e.g., "click", "cta_click", "purchase"
+    variant: str  # "A" or "B"
+    properties: Dict[str, Any] = {}
+
+
+class UpdateWeightsRequest(BaseModel):
+    """Request to update scoring weights"""
+    weights: Dict[str, float]
+    score_threshold: Optional[float] = None
+
+
+@app.get("/api/scoring/weights")
+async def get_scoring_weights(business: Business = Depends(verify_api_key)):
+    """Get current scoring weights for this business"""
+    config = get_business_weights(business.business_id)
+    return {
+        "business_id": business.business_id,
+        "weights": config["weights"],
+        "score_threshold": config["score_threshold"],
+        "available_interactions": list(DEFAULT_WEIGHTS.keys())
+    }
+
+
+@app.put("/api/scoring/weights")
+async def update_scoring_weights(
+    request: UpdateWeightsRequest,
+    business: Business = Depends(verify_api_key)
+):
+    """Update scoring weights for this business"""
+    update_data = {
+        "business_id": business.business_id,
+        "weights": request.weights,
+        "updated_at": datetime.utcnow()
+    }
+
+    if request.score_threshold is not None:
+        update_data["score_threshold"] = request.score_threshold
+
+    weights_collection.update_one(
+        {"business_id": business.business_id},
+        {"$set": update_data},
+        upsert=True
+    )
+
+    return {
+        "status": "updated",
+        "business_id": business.business_id,
+        "weights": request.weights,
+        "score_threshold": request.score_threshold or DEFAULT_SCORE_THRESHOLD
+    }
+
+
+@app.post("/api/scoring/interaction")
+async def score_interaction(
+    request: ScoreInteractionRequest,
+    business: Business = Depends(verify_api_key)
+):
+    """
+    Score an interaction for A/B testing.
+    If score difference exceeds threshold, triggers component regeneration.
+    """
+    # Get weights and scores
+    config = get_business_weights(business.business_id)
+    weights = config["weights"]
+    threshold = config["score_threshold"]
+
+    scores = get_or_create_user_scores(
+        business.business_id,
+        request.user_id,
+        request.component_id
+    )
+
+    # Calculate score delta
+    score_delta = calculate_score_delta(request.interaction_type, weights)
+    variant_key = f"variant_{request.variant.lower()}"
+
+    # Update the variant's score
+    current_score = scores.get(variant_key, {}).get("current_score", 0.0)
+    new_score = current_score + score_delta
+    interaction_count = scores.get(variant_key, {}).get("interaction_count", 0) + 1
+
+    scores_collection.update_one(
+        {
+            "business_id": business.business_id,
+            "user_id": request.user_id,
+            "component_id": request.component_id
+        },
+        {
+            "$set": {
+                f"{variant_key}.current_score": new_score,
+                f"{variant_key}.interaction_count": interaction_count,
+                f"{variant_key}.last_interaction": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    # Get updated scores
+    updated_scores = scores_collection.find_one({
+        "business_id": business.business_id,
+        "user_id": request.user_id,
+        "component_id": request.component_id
+    })
+
+    score_a = updated_scores.get("variant_a", {}).get("current_score", 0.0)
+    score_b = updated_scores.get("variant_b", {}).get("current_score", 0.0)
+
+    # Check if regeneration needed
+    should_regen, regen_variant = should_trigger_regeneration(score_a, score_b, threshold)
+
+    result = {
+        "status": "scored",
+        "user_id": request.user_id,
+        "component_id": request.component_id,
+        "variant": request.variant,
+        "interaction_type": request.interaction_type,
+        "weight_applied": score_delta,
+        "new_score": new_score,
+        "variant_a_score": score_a,
+        "variant_b_score": score_b,
+        "score_difference": abs(score_a - score_b),
+        "threshold": threshold,
+        "should_regenerate": should_regen,
+        "regenerate_variant": regen_variant
+    }
+
+    # If regeneration needed, trigger it via the main server's rewardTag
+    if should_regen:
+        result["regeneration_triggered"] = True
+        result["regeneration_message"] = f"Variant {regen_variant} will be regenerated (losing by {abs(score_a - score_b):.2f} points)"
+
+        # Increment regeneration count
+        scores_collection.update_one(
+            {
+                "business_id": business.business_id,
+                "user_id": request.user_id,
+                "component_id": request.component_id
+            },
+            {"$inc": {"regeneration_count": 1}}
+        )
+
+        # Sync with main server.py user collection for regeneration
+        # The main server uses user_id with variants.A/B.current_score
+        winning_variant = "A" if score_a > score_b else "B"
+        sync_score_to_main_users(
+            request.user_id,
+            request.component_id,
+            score_a,
+            score_b,
+            winning_variant,
+            request.properties.get("context_html", "")
+        )
+
+    return result
+
+
+def sync_score_to_main_users(user_id: str, component_id: str, score_a: float, score_b: float, winning_variant: str, context_html: str = ""):
+    """
+    Sync scores to the main users collection used by server.py
+    This enables the reRender/AIRags regeneration flow
+    """
+    # Create composite user_id for the main users collection
+    composite_user_id = f"{user_id}_{component_id}"
+
+    existing = users_collection.find_one({"user_id": composite_user_id})
+
+    if not existing:
+        # Create user entry matching server.py structure
+        users_collection.insert_one({
+            "user_id": composite_user_id,
+            "variants": {
+                "A": {
+                    "current_html": "<div>Variant A</div>",
+                    "current_score": score_a,
+                    "number_of_trials": 1,
+                    "history": []
+                },
+                "B": {
+                    "current_html": "<div>Variant B</div>",
+                    "current_score": score_b,
+                    "number_of_trials": 1,
+                    "history": []
+                }
+            }
+        })
+    else:
+        # Update existing scores
+        users_collection.update_one(
+            {"user_id": composite_user_id},
+            {
+                "$set": {
+                    "variants.A.current_score": score_a,
+                    "variants.B.current_score": score_b
+                }
+            }
+        )
+
+
+@app.get("/api/scoring/user/{user_id}")
+async def get_user_scores(
+    user_id: str,
+    component_id: Optional[str] = None,
+    business: Business = Depends(verify_api_key)
+):
+    """Get scores for a user, optionally filtered by component_id"""
+    query = {
+        "business_id": business.business_id,
+        "user_id": user_id
+    }
+
+    # If component_id specified, get that specific component's scores
+    if component_id:
+        query["component_id"] = component_id
+        score_doc = scores_collection.find_one(query)
+
+        if score_doc:
+            return {
+                "user_id": user_id,
+                "business_id": business.business_id,
+                "component_id": component_id,
+                "scores": serialize_doc(score_doc)
+            }
+        else:
+            # Return empty scores structure
+            return {
+                "user_id": user_id,
+                "business_id": business.business_id,
+                "component_id": component_id,
+                "scores": {
+                    "variant_a": {"current_score": 0.0, "interaction_count": 0},
+                    "variant_b": {"current_score": 0.0, "interaction_count": 0},
+                    "active_variant": "A",
+                    "regeneration_count": 0
+                }
+            }
+
+    # Otherwise return all components
+    scores = list(scores_collection.find(query))
+
+    return {
+        "user_id": user_id,
+        "business_id": business.business_id,
+        "components": [serialize_doc(s) for s in scores],
+        "total_components": len(scores)
+    }
+
+
+@app.get("/api/scoring/component/{component_id}")
+async def get_component_scores(
+    component_id: str,
+    business: Business = Depends(verify_api_key)
+):
+    """Get aggregated scores for a component across all users"""
+    pipeline = [
+        {"$match": {"business_id": business.business_id, "component_id": component_id}},
+        {
+            "$group": {
+                "_id": "$component_id",
+                "total_users": {"$sum": 1},
+                "avg_score_a": {"$avg": "$variant_a.current_score"},
+                "avg_score_b": {"$avg": "$variant_b.current_score"},
+                "total_interactions_a": {"$sum": "$variant_a.interaction_count"},
+                "total_interactions_b": {"$sum": "$variant_b.interaction_count"},
+                "total_regenerations": {"$sum": "$regeneration_count"}
+            }
+        }
+    ]
+
+    results = list(scores_collection.aggregate(pipeline))
+
+    if not results:
+        return {
+            "component_id": component_id,
+            "message": "No data for this component"
+        }
+
+    result = results[0]
+    avg_a = result.get("avg_score_a", 0) or 0
+    avg_b = result.get("avg_score_b", 0) or 0
+
+    return {
+        "component_id": component_id,
+        "business_id": business.business_id,
+        "total_users": result.get("total_users", 0),
+        "variant_a": {
+            "avg_score": round(avg_a, 2),
+            "total_interactions": result.get("total_interactions_a", 0)
+        },
+        "variant_b": {
+            "avg_score": round(avg_b, 2),
+            "total_interactions": result.get("total_interactions_b", 0)
+        },
+        "winning_variant": "A" if avg_a > avg_b else "B" if avg_b > avg_a else "Tie",
+        "score_difference": round(abs(avg_a - avg_b), 2),
+        "total_regenerations": result.get("total_regenerations", 0)
+    }
+
+
+@app.get("/api/scoring/leaderboard")
+async def get_scoring_leaderboard(
+    business: Business = Depends(verify_api_key),
+    limit: int = 10
+):
+    """Get top components by score difference (most decisive A/B tests)"""
+    pipeline = [
+        {"$match": {"business_id": business.business_id}},
+        {
+            "$group": {
+                "_id": "$component_id",
+                "total_users": {"$sum": 1},
+                "avg_score_a": {"$avg": "$variant_a.current_score"},
+                "avg_score_b": {"$avg": "$variant_b.current_score"},
+                "total_regenerations": {"$sum": "$regeneration_count"}
+            }
+        },
+        {
+            "$addFields": {
+                "score_diff": {"$abs": {"$subtract": ["$avg_score_a", "$avg_score_b"]}}
+            }
+        },
+        {"$sort": {"score_diff": -1}},
+        {"$limit": limit}
+    ]
+
+    results = list(scores_collection.aggregate(pipeline))
+
+    leaderboard = []
+    for r in results:
+        avg_a = r.get("avg_score_a", 0) or 0
+        avg_b = r.get("avg_score_b", 0) or 0
+        leaderboard.append({
+            "component_id": r["_id"],
+            "total_users": r.get("total_users", 0),
+            "variant_a_avg": round(avg_a, 2),
+            "variant_b_avg": round(avg_b, 2),
+            "winning_variant": "A" if avg_a > avg_b else "B" if avg_b > avg_a else "Tie",
+            "score_difference": round(r.get("score_diff", 0), 2),
+            "total_regenerations": r.get("total_regenerations", 0)
+        })
+
+    return {
+        "business_id": business.business_id,
+        "leaderboard": leaderboard
+    }
+
+
+# ----------------------------------------
+# Integration with tagAi / rewardTag (Component Generation)
+# ----------------------------------------
+import httpx
+
+COMPONENT_GEN_URL = os.getenv("COMPONENT_GEN_URL", "http://localhost:3000")
+
+
+class TagAiRequest(BaseModel):
+    """Request for component generation"""
+    user_id: str
+    component_id: str
+    changing_html: str
+    context_html: str
+
+
+class RewardTagRequest(BaseModel):
+    """Request for rewarding a variant"""
+    user_id: str
+    component_id: str
+    variant: str  # "A" or "B"
+    reward: float
+    context_html: str
+    interaction_type: str = "conversion"  # Type of interaction that triggered reward
+
+
+@app.post("/api/component/generate")
+async def generate_component(
+    request: TagAiRequest,
+    business: Business = Depends(verify_api_key)
+):
+    """
+    Generate/get a component variant for A/B testing.
+    Calls the tagAi endpoint internally.
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{COMPONENT_GEN_URL}/tagAi",
+                json={
+                    "user_id": f"{business.business_id}_{request.user_id}",
+                    "changingHtml": request.changing_html,
+                    "contextHtml": request.context_html
+                },
+                timeout=30.0
+            )
+
+            result = response.json()
+
+            # Track which variant was served
+            variant = result.get("variant", "A")
+            scores = get_or_create_user_scores(
+                business.business_id,
+                request.user_id,
+                request.component_id
+            )
+
+            # Update active variant
+            scores_collection.update_one(
+                {
+                    "business_id": business.business_id,
+                    "user_id": request.user_id,
+                    "component_id": request.component_id
+                },
+                {"$set": {"active_variant": variant}}
+            )
+
+            return {
+                "status": "ok",
+                "component_id": request.component_id,
+                "variant": variant,
+                "html": result.get("changingHtml", request.changing_html),
+                "user_id": request.user_id
+            }
+
+    except Exception as e:
+        # Fallback: return original HTML
+        return {
+            "status": "fallback",
+            "component_id": request.component_id,
+            "variant": "A",
+            "html": request.changing_html,
+            "error": str(e)
+        }
+
+
+@app.post("/api/component/reward")
+async def reward_component(
+    request: RewardTagRequest,
+    business: Business = Depends(verify_api_key)
+):
+    """
+    Reward a component variant and check for regeneration.
+    Calls rewardTag endpoint and scoring system.
+    """
+    # First, score the interaction
+    config = get_business_weights(business.business_id)
+    weights = config["weights"]
+    threshold = config["score_threshold"]
+
+    scores = get_or_create_user_scores(
+        business.business_id,
+        request.user_id,
+        request.component_id
+    )
+
+    # Calculate score delta based on interaction type and reward
+    base_delta = calculate_score_delta(request.interaction_type, weights)
+    score_delta = base_delta * request.reward if request.reward > 0 else base_delta
+
+    variant_key = f"variant_{request.variant.lower()}"
+    current_score = scores.get(variant_key, {}).get("current_score", 0.0)
+    new_score = current_score + score_delta
+
+    # Update score
+    scores_collection.update_one(
+        {
+            "business_id": business.business_id,
+            "user_id": request.user_id,
+            "component_id": request.component_id
+        },
+        {
+            "$set": {
+                f"{variant_key}.current_score": new_score,
+                f"{variant_key}.last_interaction": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            "$inc": {f"{variant_key}.interaction_count": 1}
+        }
+    )
+
+    # Get updated scores
+    updated_scores = scores_collection.find_one({
+        "business_id": business.business_id,
+        "user_id": request.user_id,
+        "component_id": request.component_id
+    })
+
+    score_a = updated_scores.get("variant_a", {}).get("current_score", 0.0)
+    score_b = updated_scores.get("variant_b", {}).get("current_score", 0.0)
+
+    # Check if regeneration needed
+    should_regen, regen_variant = should_trigger_regeneration(score_a, score_b, threshold)
+
+    result = {
+        "status": "rewarded",
+        "component_id": request.component_id,
+        "variant": request.variant,
+        "reward": request.reward,
+        "score_delta": score_delta,
+        "new_score": new_score,
+        "variant_a_score": score_a,
+        "variant_b_score": score_b,
+        "should_regenerate": should_regen
+    }
+
+    # If regeneration needed, call rewardTag to trigger it
+    if should_regen:
+        try:
+            async with httpx.AsyncClient() as client:
+                regen_response = await client.post(
+                    f"{COMPONENT_GEN_URL}/rewardTag",
+                    json={
+                        "user_id": f"{business.business_id}_{request.user_id}",
+                        "variantAttributed": request.variant,
+                        "reward": request.reward,
+                        "contextHtml": request.context_html
+                    },
+                    timeout=30.0
+                )
+
+                result["regeneration_triggered"] = True
+                result["regeneration_response"] = regen_response.json()
+
+                # Increment regeneration count
+                scores_collection.update_one(
+                    {
+                        "business_id": business.business_id,
+                        "user_id": request.user_id,
+                        "component_id": request.component_id
+                    },
+                    {"$inc": {"regeneration_count": 1}}
+                )
+
+        except Exception as e:
+            result["regeneration_error"] = str(e)
+
+    return result
 
 
 # ----------------------------------------
@@ -1115,7 +1789,7 @@ def root():
         "status": "running",
         "service": "html.ai - Multi-Tenant B2B Platform",
         "version": "3.0.0",
-        "features": ["multi-tenant", "cross-site-tracking", "data-sharing"]
+        "features": ["multi-tenant", "cross-site-tracking", "data-sharing", "ab-scoring"]
     }
 
 
