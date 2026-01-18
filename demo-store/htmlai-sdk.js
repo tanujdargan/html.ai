@@ -408,9 +408,10 @@
             if (this.optimized) return;
 
             const ids = UserManager.getIds();
-
+            const contextHtml = document.documentElement.outerHTML;
+            console.log(contextHtml)
             try {
-                const response = await fetch(`${CONFIG.apiBaseUrl}/api/optimize`, {
+                const response = await fetch(`${CONFIG.apiBaseUrl}/tagAi`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -418,9 +419,10 @@
                     },
                     body: JSON.stringify({
                         user_id: ids.user_id,
-                        component_id: this.componentId,
-                        html: this.originalContent,
-                        global_uid: ids.global_uid
+                        changingHtml: this.originalContent,
+                        //component_id: this.componentId,
+                        contextHtml: contextHtml,
+                        //global_uid: ids.global_uid
                     })
                 });
 
@@ -429,6 +431,7 @@
                 }
 
                 const result = await response.json();
+                console.log("response " + result)
                 this.applyVariant(result);
                 this.optimized = true;
 
