@@ -3,109 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StyleHub - Fashion Clothing (Business B)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Amazoon - Online Fashion Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amazon+Ember:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        header {
-            background: #2c3e50;
+
+        body {
+            font-family: 'Amazon Ember', Arial, sans-serif;
+            background: #eaeded;
+            color: #0f1111;
+        }
+
+        /* Amazon Header */
+        .header-top {
+            background: #131921;
             color: white;
-            padding: 1rem 2rem;
+            padding: 8px 16px;
+        }
+
+        .header-content {
+            max-width: 1500px;
+            margin: 0 auto;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            padding: 6px 10px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+        }
+
+        .logo:hover {
+            border-color: white;
+        }
+
+        .search-bar {
+            flex: 1;
+            display: flex;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            font-size: 15px;
+        }
+
+        .search-bar button {
+            background: #febd69;
+            border: none;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
             align-items: center;
         }
-        .logo { font-size: 1.5rem; font-weight: 700; }
-        .business-badge {
-            background: #e74c3c;
+
+        .header-link {
             color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            text-decoration: none;
+            padding: 6px 8px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+            font-size: 14px;
+            white-space: nowrap;
         }
-        .hero {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+
+        .header-link:hover {
+            border-color: white;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            background: #232f3e;
+            padding: 6px 16px;
+        }
+
+        .nav-content {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
             color: white;
-            padding: 4rem 2rem;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            border-radius: 2px;
+        }
+
+        .nav-link:hover {
+            border-color: white;
+        }
+
+        .business-badge {
+            background: #ff9900;
+            color: #131921;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Cross-site Banner */
+        .cross-site-banner {
+            background: linear-gradient(90deg, #067d62 0%, #037f61 100%);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .cross-site-banner.active {
+            display: block;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(180deg, #37475a 0%, #232f3e 100%);
+            padding: 32px 16px;
+            margin-bottom: 16px;
+        }
+
+        .hero-content {
+            max-width: 1500px;
+            margin: 0 auto;
+            color: white;
             text-align: center;
         }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-        .hero p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; }
-        .cta-btn {
-            background: white;
-            color: #e74c3c;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
+
+        .hero h1 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .btn-amazon {
+            background: #ffa41c;
+            border: 1px solid #ff8f00;
+            color: #0f1111;
+            padding: 10px 24px;
+            font-size: 15px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(213,217,217,.5);
+            transition: all 0.2s;
         }
-        .cta-btn:hover { transform: scale(1.05); }
-        .cross-site-banner {
-            background: #27ae60;
-            color: white;
-            padding: 0.75rem;
-            text-align: center;
-            display: none;
+
+        .btn-amazon:hover {
+            background: #ff9900;
+            border-color: #e77600;
         }
-        .cross-site-banner.active { display: block; }
+
+        /* Products */
         .products {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+            max-width: 1500px;
+            margin: 0 auto 40px;
+            padding: 0 16px;
         }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #0f1111;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
         .product-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
-        .product-card:hover { transform: translateY(-4px); }
-        .product-img {
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .product-image {
             width: 100%;
-            height: 200px;
-            background: #ecf0f1;
+            height: 280px;
+            background: #f7f8f8;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
-            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
-        .product-info { padding: 1.5rem; }
-        .product-info h3 { margin-bottom: 0.5rem; }
-        .product-info .price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #e74c3c;
-            margin-bottom: 1rem;
-        }
-        .add-to-cart-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
+
+        .product-image img {
             width: 100%;
-            transition: background 0.2s;
+            height: 100%;
+            object-fit: cover;
         }
-        .add-to-cart-btn:hover { background: #c0392b; }
-        .add-to-cart-btn.added {
-            background: #27ae60;
+
+        .prime-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #00a8e1;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
         }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-brand {
+            font-size: 13px;
+            color: #565959;
+            margin-bottom: 4px;
+        }
+
+        .product-info h3 {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: #0f1111;
+            line-height: 1.3;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .stars {
+            color: #ffa41c;
+        }
+
+        .review-count {
+            color: #007185;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .price-currency {
+            font-size: 12px;
+        }
+
+        .price-whole {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .price-fraction {
+            font-size: 12px;
+        }
+
+        .delivery {
+            font-size: 13px;
+            color: #007600;
+            font-weight: 500;
+        }
+
+        /* Debug Panel */
         .debug-panel {
             position: fixed;
             bottom: 20px;
@@ -116,12 +315,23 @@
             border-radius: 8px;
             font-family: monospace;
             font-size: 0.75rem;
-            max-width: 400px;
+            max-width: 350px;
             z-index: 1000;
         }
-        .debug-panel h4 { color: #e74c3c; margin-bottom: 0.5rem; }
-        .debug-item { margin: 0.25rem 0; }
-        .debug-label { color: #888; }
+
+        .debug-panel h4 {
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
+        }
+
+        .debug-item {
+            margin: 0.25rem 0;
+        }
+
+        .debug-label {
+            color: #888;
+        }
+
         .cross-site-tag {
             background: #27ae60;
             color: white;
@@ -130,98 +340,189 @@
             font-size: 0.625rem;
             margin-left: 0.5rem;
         }
-        .score-display {
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #333;
+
+        .debug-value {
+            color: #0f1111;
+            font-weight: 500;
+            word-break: break-all;
         }
-        .score-bar {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.25rem;
-        }
-        .score-a, .score-b {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-        }
-        .score-a { background: #667eea; color: white; }
-        .score-b { background: #e74c3c; color: white; }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
+
+        .cross-site-indicator {
+            background: #067d62;
             color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-            z-index: 2000;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            display: none;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
+
+        .cross-site-indicator.active {
+            display: inline-block;
         }
-        .toast.success { background: #27ae60; }
-        .toast.regenerate { background: #ff9800; }
+
+        .cross-site-link {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .cross-site-link a {
+            color: #007185;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .cross-site-link a:hover {
+            color: #c7511f;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">StyleHub</div>
-        <span class="business-badge">Business B - biz_clothes</span>
-    </header>
-
-    <!-- Cross-site recognition banner -->
+    <!-- Cross-site Banner -->
     <div class="cross-site-banner" id="cross-site-banner">
-        Welcome back! We see you were browsing shoes - check out our matching outfits!
+        🎉 Welcome back! We noticed you were looking at shoes at Shoopify - check out our matching outfits!
     </div>
 
-    <!-- AI-Optimized Hero Section -->
-    <ai-optimize component-id="hero-clothes" data-active-variant="B">
-        <div class="hero">
-            <h1 data-ai="headline">Fashion Forward Collection</h1>
-            <p data-ai="subheadline">Express your unique style</p>
-            <button class="cta-btn" data-ai="cta" onclick="handleCtaClick()">Explore Styles</button>
+    <!-- Header -->
+    <div class="header-top">
+        <div class="header-content">
+            <div class="logo">Amazoon</div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search Amazoon">
+                <button>🔍</button>
+            </div>
+            <div class="header-actions">
+                <span class="business-badge">Business B</span>
+                <a href="#" class="header-link">Returns & Orders</a>
+                <a href="#" class="header-link">Cart 🛒</a>
+            </div>
         </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-bar">
+        <div class="nav-content">
+            <a href="#" class="nav-link">All</a>
+            <a href="#" class="nav-link">Today's Deals</a>
+            <a href="#" class="nav-link">Men's Fashion</a>
+            <a href="#" class="nav-link">Women's Fashion</a>
+            <a href="#" class="nav-link">New Arrivals</a>
+            <a href="#" class="nav-link">Best Sellers</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <!-- AI-Optimized Hero Section -->
+    <ai-optimize component-id="hero-clothes">
+        <section class="hero">
+            <div class="hero-content">
+                <h1 data-ai="headline">Fashion Forward Collection</h1>
+                <p data-ai="subheadline">Express your unique style with our premium clothing. Free shipping on orders over $50.</p>
+                <button class="btn-amazon" id="hero-cta" data-ai="cta">Shop Fashion Deals</button>
+            </div>
+        </section>
     </ai-optimize>
 
-    <div class="products">
-        <div class="product-card" data-track-hover data-component-id="product-clothes-1" data-product-name="Urban Bomber" data-price="129.99">
-            <div class="product-img" onclick="handleProductClick('product-clothes-1', 'Urban Bomber')">Jacket</div>
-            <div class="product-info">
-                <h3>Urban Bomber</h3>
-                <p class="price">$129.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-clothes-1', 'Urban Bomber', 129.99)">Add to Cart</button>
+    <!-- Products -->
+    <section class="products">
+        <h2 class="section-title">Today's Best Deals in Clothing</h2>
+        <div class="product-grid">
+            <!-- Product 1 -->
+            <div class="product-card" data-product-id="cloth-1">
+                <div class="product-image">
+                    <div class="prime-badge">Prime</div>
+                    <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop" alt="Bomber Jacket">
+                </div>
+                <div class="product-info">
+                    <div class="product-brand">Urban Threads</div>
+                    <h3>Men's Premium Bomber Jacket - Water Resistant, Multiple Colors Available</h3>
+                    <div class="rating">
+                        <span class="stars">⭐⭐⭐⭐⭐</span>
+                        <span class="review-count">2,431</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="price-currency">$</span>
+                        <span class="price-whole">129</span>
+                        <span class="price-fraction">99</span>
+                    </div>
+                    <div class="delivery">FREE delivery Tomorrow</div>
+                </div>
             </div>
-        </div>
-        <div class="product-card" data-track-hover data-component-id="product-clothes-2" data-product-name="Slim Fit Denim" data-price="79.99">
-            <div class="product-img" onclick="handleProductClick('product-clothes-2', 'Slim Fit Denim')">Jeans</div>
-            <div class="product-info">
-                <h3>Slim Fit Denim</h3>
-                <p class="price">$79.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-clothes-2', 'Slim Fit Denim', 79.99)">Add to Cart</button>
-            </div>
-        </div>
-        <div class="product-card" data-track-hover data-component-id="product-clothes-3" data-product-name="Essential Tee" data-price="34.99">
-            <div class="product-img" onclick="handleProductClick('product-clothes-3', 'Essential Tee')">T-Shirt</div>
-            <div class="product-info">
-                <h3>Essential Tee</h3>
-                <p class="price">$34.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-clothes-3', 'Essential Tee', 34.99)">Add to Cart</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+            <!-- Product 2 -->
+            <div class="product-card" data-product-id="cloth-2">
+                <div class="product-image">
+                    <div class="prime-badge">Prime</div>
+                    <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop" alt="Jeans">
+                </div>
+                <div class="product-info">
+                    <div class="product-brand">DenimCo</div>
+                    <h3>Slim Fit Stretch Jeans - Dark Wash, Comfortable All-Day Wear, Classic Style</h3>
+                    <div class="rating">
+                        <span class="stars">⭐⭐⭐⭐</span>
+                        <span class="review-count">1,892</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="price-currency">$</span>
+                        <span class="price-whole">79</span>
+                        <span class="price-fraction">99</span>
+                    </div>
+                    <div class="delivery">FREE delivery Tomorrow</div>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="product-card" data-product-id="cloth-3">
+                <div class="product-image">
+                    <div class="prime-badge">Prime</div>
+                    <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop" alt="T-Shirt">
+                </div>
+                <div class="product-info">
+                    <div class="product-brand">Essential Basics</div>
+                    <h3>Premium Cotton T-Shirt Pack of 3 - Soft, Breathable, Multiple Sizes and Colors</h3>
+                    <div class="rating">
+                        <span class="stars">⭐⭐⭐⭐⭐</span>
+                        <span class="review-count">5,127</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="price-currency">$</span>
+                        <span class="price-whole">34</span>
+                        <span class="price-fraction">99</span>
+                    </div>
+                    <div class="delivery">FREE delivery Tomorrow</div>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="product-card" data-product-id="cloth-4">
+                <div class="product-image">
+                    <div class="prime-badge">Prime</div>
+                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=400&fit=crop" alt="Summer Dress">
+                </div>
+                <div class="product-info">
+                    <div class="product-brand">Chic Collection</div>
+                    <h3>Women's Summer Dress - Floral Print, Lightweight Fabric, Perfect for Any Occasion</h3>
+                    <div class="rating">
+                        <span class="stars">⭐⭐⭐⭐</span>
+                        <span class="review-count">3,654</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="price-currency">$</span>
+                        <span class="price-whole">59</span>
+                        <span class="price-fraction">99</span>
+                    </div>
+                    <div class="delivery">FREE delivery Tomorrow</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Debug Panel -->
+    <!-- Debug Panel -->
     <div class="debug-panel">
-        <h4>html.ai Debug + Scoring</h4>
+        <h4>html.ai Debug</h4>
         <div class="debug-item"><span class="debug-label">Business:</span> biz_clothes (Business B)</div>
         <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
         <div class="debug-item">
@@ -232,20 +533,7 @@
         <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
         <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
         <div class="debug-item" id="cross-site-info" style="display:none; color: #27ae60;">
-            <span class="debug-label">Cross-Site Data:</span> User visited Business A!
-        </div>
-        <div class="score-display">
-            <div class="debug-label">Hero Component Scores:</div>
-            <div class="score-bar">
-                <span class="score-a">A: <span id="score-a">0.00</span></span>
-                <span class="score-b">B: <span id="score-b">0.00</span></span>
-            </div>
-            <div class="debug-item" style="margin-top: 0.25rem;">
-                <span class="debug-label">Active Variant:</span> <span id="active-variant">B</span>
-            </div>
-            <div class="debug-item">
-                <span class="debug-label">Regenerations:</span> <span id="regen-count">0</span>
-            </div>
+            <span class="debug-label">Cross-Site Data:</span> Linked to global profile
         </div>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
             <a href="demo-business-a.html" style="color: #e74c3c;">Visit Business A (Shoes)</a>
@@ -261,99 +549,8 @@
     </script>
 
     <script>
+        // Update debug panel
         let eventCount = 0;
-        let activeVariant = 'B';
-
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast show ' + type;
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3000);
-        }
-
-        // Update score display
-        function updateScoreDisplay(result) {
-            if (result) {
-                document.getElementById('score-a').textContent = (result.variant_a_score || 0).toFixed(2);
-                document.getElementById('score-b').textContent = (result.variant_b_score || 0).toFixed(2);
-                document.getElementById('active-variant').textContent = activeVariant;
-
-                if (result.should_regenerate) {
-                    document.getElementById('regen-count').textContent =
-                        parseInt(document.getElementById('regen-count').textContent) + 1;
-                    showToast(`Regenerating variant ${result.regenerate_variant}! Score diff: ${result.score_difference.toFixed(2)}`, 'regenerate');
-                }
-            }
-        }
-
-        // Handle CTA button click (high value action)
-        async function handleCtaClick() {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            if (window.HtmlAI && window.HtmlAI.scoreInteraction) {
-                const result = await window.HtmlAI.scoreInteraction('hero-clothes', 'cta_click', activeVariant);
-                updateScoreDisplay(result);
-                showToast('CTA Click scored (+3.0)');
-            }
-        }
-
-        // Handle product click
-        async function handleProductClick(componentId, productName) {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            if (window.HtmlAI) {
-                // Track basic event
-                window.HtmlAI.track('product_click', componentId, { product_name: productName });
-
-                // Score the interaction
-                if (window.HtmlAI.scoreInteraction) {
-                    const result = await window.HtmlAI.scoreInteraction('hero-clothes', 'click', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast('Product Click scored (+1.0)');
-                }
-            }
-        }
-
-        // Handle add to cart (high value action)
-        async function handleAddToCart(e, componentId, productName, price) {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            // Visual feedback
-            const btn = e.target;
-            btn.textContent = 'Added!';
-            btn.classList.add('added');
-            setTimeout(() => {
-                btn.textContent = 'Add to Cart';
-                btn.classList.remove('added');
-            }, 2000);
-
-            if (window.HtmlAI) {
-                // Track event
-                window.HtmlAI.track('add_to_cart', componentId, {
-                    product_name: productName,
-                    price: price
-                });
-
-                // Score the interaction (add_to_cart has weight 5.0)
-                if (window.HtmlAI.scoreInteraction) {
-                    const result = await window.HtmlAI.scoreInteraction('hero-clothes', 'add_to_cart', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast(`Added ${productName} to cart! Scored (+5.0)`, 'success');
-                }
-            }
-        }
-
-        // Listen for regeneration events
-        window.addEventListener('htmlai:regenerate', (event) => {
-            console.log('Regeneration triggered:', event.detail);
-            showToast(`Component regenerating variant ${event.detail.variant}!`, 'regenerate');
-        });
 
         // Wait for SDK to initialize
         function initDebug() {
@@ -366,75 +563,32 @@
             document.getElementById('debug-uid').textContent = user.user_id || 'N/A';
             document.getElementById('debug-session').textContent = user.session_id || 'N/A';
 
-            // Check if user already has a global ID (came from another site)
             if (user.global_uid) {
                 document.getElementById('debug-guid').textContent = user.global_uid;
                 document.getElementById('cross-site-tag').style.display = 'inline';
                 document.getElementById('cross-site-info').style.display = 'block';
-                document.getElementById('cross-site-banner').classList.add('active');
             }
 
             // Listen for cross-site sync
             window.HtmlAI.onSync((guid) => {
                 document.getElementById('debug-guid').textContent = guid;
-
-                // Check if this user was seen on Business A
-                fetch(`http://localhost:3000/api/user/${user.user_id}/cross-site-profile`, {
-                    headers: { 'X-API-Key': 'pk_demo_clothes_456' }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.cross_site_profile) {
-                        document.getElementById('cross-site-tag').style.display = 'inline';
-                        document.getElementById('cross-site-info').style.display = 'block';
-                        document.getElementById('cross-site-banner').classList.add('active');
-                    }
-                })
-                .catch(() => {});
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
             });
-
-            // Fetch initial scores
-            fetchScores();
-        }
-
-        // Fetch current scores from server
-        async function fetchScores() {
-            try {
-                const user = window.HtmlAI.getUser();
-                const response = await fetch(`http://localhost:3000/api/scoring/user/${user.user_id}?component_id=hero-clothes`, {
-                    headers: { 'X-API-Key': 'pk_demo_clothes_456' }
-                });
-                const data = await response.json();
-                if (data.scores) {
-                    document.getElementById('score-a').textContent = (data.scores.variant_a?.current_score || 0).toFixed(2);
-                    document.getElementById('score-b').textContent = (data.scores.variant_b?.current_score || 0).toFixed(2);
-                    // DON'T override activeVariant from DB - use what's shown on the page
-                    document.getElementById('active-variant').textContent = activeVariant;
-                    document.getElementById('regen-count').textContent = data.scores.regeneration_count || 0;
-                }
-            } catch (err) {
-                console.log('Could not fetch scores:', err);
-            }
         }
 
         // Start checking for SDK
         setTimeout(initDebug, 1000);
 
-        // Track hovers on products
+        // Track clicks on products
         document.querySelectorAll('.product-card').forEach(card => {
-            let hoverStart = 0;
-
-            card.addEventListener('mouseenter', () => {
-                hoverStart = Date.now();
-            });
-
-            card.addEventListener('mouseleave', async () => {
-                const duration = Date.now() - hoverStart;
-                if (duration > 2000 && window.HtmlAI && window.HtmlAI.scoreInteraction) {
-                    // Long hover (> 2s) - engagement signal
-                    const result = await window.HtmlAI.scoreInteraction('hero-clothes', 'hover_long', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast('Long hover detected (+0.5)');
+            card.addEventListener('click', () => {
+                eventCount++;
+                document.getElementById('debug-events').textContent = eventCount;
+                if (window.HtmlAI && window.HtmlAI.track) {
+                    window.HtmlAI.track('product_click', card.dataset.productId, {
+                        product_name: card.querySelector('h3').textContent
+                    });
                 }
             });
         });

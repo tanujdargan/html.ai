@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShoeMax - Premium Footwear (Business A)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+        header {
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .business-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; }
+        .cta-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cta-btn:hover { transform: scale(1.05); }
+        .products {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .product-card:hover { transform: translateY(-4px); }
+        .product-img {
+            width: 100%;
+            height: 200px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+        .product-info { padding: 1.5rem; }
+        .product-info h3 { margin-bottom: 0.5rem; }
+        .product-info .price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        .add-to-cart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .add-to-cart-btn:hover { background: #5a6fd6; }
+        .add-to-cart-btn.added {
+            background: #4CAF50;
+        }
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-width: 400px;
+            z-index: 1000;
+        }
+        .debug-panel h4 { color: #4CAF50; margin-bottom: 0.5rem; }
+        .debug-item { margin: 0.25rem 0; }
+        .debug-label { color: #888; }
+        .score-display {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #333;
+        }
+        .score-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        .score-a, .score-b {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        .score-a { background: #667eea; color: white; }
+        .score-b { background: #e74c3c; color: white; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { background: #4CAF50; }
+        .toast.regenerate { background: #ff9800; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">ShoeMax</div>
+        <span class="business-badge">Business A - biz_shoes</span>
+    </header>
+
+    <!-- AI-Optimized Hero Section -->
+    <ai-optimize component-id="hero-shoes" data-active-variant="A">
+        <div class="hero">
+            <h1 data-ai="headline">Premium Footwear Collection</h1>
+            <p data-ai="subheadline">Step into comfort and style</p>
+            <button class="cta-btn" data-ai="cta" onclick="handleCtaClick()">Shop Now</button>
+        </div>
+    </ai-optimize>
+
+    <div class="products">
+        <div class="product-card" data-track-hover data-component-id="product-shoes-1" data-product-name="Air Max Pro" data-price="149.99">
+            <div class="product-img" onclick="handleProductClick('product-shoes-1', 'Air Max Pro')">Running Shoes</div>
+            <div class="product-info">
+                <h3>Air Max Pro</h3>
+                <p class="price">$149.99</p>
+                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-1', 'Air Max Pro', 149.99)">Add to Cart</button>
+            </div>
+        </div>
+        <div class="product-card" data-track-hover data-component-id="product-shoes-2" data-product-name="Urban Classic" data-price="89.99">
+            <div class="product-img" onclick="handleProductClick('product-shoes-2', 'Urban Classic')">Casual Sneakers</div>
+            <div class="product-info">
+                <h3>Urban Classic</h3>
+                <p class="price">$89.99</p>
+                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-2', 'Urban Classic', 89.99)">Add to Cart</button>
+            </div>
+        </div>
+        <div class="product-card" data-track-hover data-component-id="product-shoes-3" data-product-name="Trail Master" data-price="199.99">
+            <div class="product-img" onclick="handleProductClick('product-shoes-3', 'Trail Master')">Hiking Boots</div>
+            <div class="product-info">
+                <h3>Trail Master</h3>
+                <p class="price">$199.99</p>
+                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-3', 'Trail Master', 199.99)">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h4>html.ai Debug + Scoring</h4>
+        <div class="debug-item"><span class="debug-label">Business:</span> biz_shoes (Business A)</div>
+        <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Global UID:</span> <span id="debug-guid">syncing...</span></div>
+        <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
+        <div class="score-display">
+            <div class="debug-label">Hero Component Scores:</div>
+            <div class="score-bar">
+                <span class="score-a">A: <span id="score-a">0.00</span></span>
+                <span class="score-b">B: <span id="score-b">0.00</span></span>
+            </div>
+            <div class="debug-item" style="margin-top: 0.25rem;">
+                <span class="debug-label">Active Variant:</span> <span id="active-variant">A</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">Regenerations:</span> <span id="regen-count">0</span>
+            </div>
+        </div>
+        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
+            <a href="demo-business-b.html" style="color: #4CAF50;">Visit Business B (Clothes)</a>
+        </div>
+    </div>
+
+    <!-- html.ai SDK -->
+    <script src="http://localhost:8080/htmlai-sdk.js"
+            data-api-key="pk_demo_shoes_123"
+            data-api-url="http://localhost:3000"
+            data-tracking-domain="http://localhost:3001"
+            data-debug>
+    </script>
+
+    <script>
+        // Update debug panel
+        let eventCount = 0;
+        let activeVariant = 'A';
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // Update score display
+        function updateScoreDisplay(result) {
+            if (result) {
+                document.getElementById('score-a').textContent = (result.variant_a_score || 0).toFixed(2);
+                document.getElementById('score-b').textContent = (result.variant_b_score || 0).toFixed(2);
+                document.getElementById('active-variant').textContent = activeVariant;
+
+                if (result.should_regenerate) {
+                    document.getElementById('regen-count').textContent =
+                        parseInt(document.getElementById('regen-count').textContent) + 1;
+                    showToast(`Regenerating variant ${result.regenerate_variant}! Score diff: ${result.score_difference.toFixed(2)}`, 'regenerate');
+                }
+            }
+        }
+
+        // Handle CTA button click (high value action)
+        async function handleCtaClick() {
+            eventCount++;
+            document.getElementById('debug-events').textContent = eventCount;
+
+            if (window.HtmlAI && window.HtmlAI.scoreInteraction) {
+                const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'cta_click', activeVariant);
+                updateScoreDisplay(result);
+                showToast('CTA Click scored (+3.0)');
+            }
+        }
+
+        // Handle product click
+        async function handleProductClick(componentId, productName) {
+            eventCount++;
+            document.getElementById('debug-events').textContent = eventCount;
+
+            if (window.HtmlAI) {
+                // Track basic event
+                window.HtmlAI.track('product_click', componentId, { product_name: productName });
+
+                // Score the interaction
+                if (window.HtmlAI.scoreInteraction) {
+                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'click', activeVariant);
+                    updateScoreDisplay(result);
+                    showToast('Product Click scored (+1.0)');
+                }
+            }
+        }
+
+        // Handle add to cart (high value action)
+        async function handleAddToCart(e, componentId, productName, price) {
+            eventCount++;
+            document.getElementById('debug-events').textContent = eventCount;
+
+            // Visual feedback
+            const btn = e.target;
+            btn.textContent = 'Added!';
+            btn.classList.add('added');
+            setTimeout(() => {
+                btn.textContent = 'Add to Cart';
+                btn.classList.remove('added');
+            }, 2000);
+
+            if (window.HtmlAI) {
+                // Track event
+                window.HtmlAI.track('add_to_cart', componentId, {
+                    product_name: productName,
+                    price: price
+                });
+
+                // Score the interaction (add_to_cart has weight 5.0)
+                if (window.HtmlAI.scoreInteraction) {
+                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'add_to_cart', activeVariant);
+                    updateScoreDisplay(result);
+                    showToast(`Added ${productName} to cart! Scored (+5.0)`, 'success');
+                }
+            }
+        }
+
+        // Listen for regeneration events
+        window.addEventListener('htmlai:regenerate', (event) => {
+            console.log('Regeneration triggered:', event.detail);
+            showToast(`Component regenerating variant ${event.detail.variant}!`, 'regenerate');
+        });
+
+        // Wait for SDK to initialize
+        function initDebug() {
+            if (!window.HtmlAI || !window.HtmlAI.getUser) {
+                setTimeout(initDebug, 500);
+                return;
+            }
+
+            const user = window.HtmlAI.getUser();
+            document.getElementById('debug-uid').textContent = user.user_id || 'N/A';
+            document.getElementById('debug-session').textContent = user.session_id || 'N/A';
+
+            if (user.global_uid) {
+                document.getElementById('debug-guid').textContent = user.global_uid;
+            }
+
+            // Listen for cross-site sync
+            window.HtmlAI.onSync((guid) => {
+                document.getElementById('debug-guid').textContent = guid;
+            });
+
+            // Fetch initial scores
+            fetchScores();
+        }
+
+        // Fetch current scores from server
+        async function fetchScores() {
+            try {
+                const user = window.HtmlAI.getUser();
+                const response = await fetch(`http://localhost:3000/api/scoring/user/${user.user_id}?component_id=hero-shoes`, {
+                    headers: { 'X-API-Key': 'pk_demo_shoes_123' }
+                });
+                const data = await response.json();
+                if (data.scores) {
+                    document.getElementById('score-a').textContent = (data.scores.variant_a?.current_score || 0).toFixed(2);
+                    document.getElementById('score-b').textContent = (data.scores.variant_b?.current_score || 0).toFixed(2);
+                    // DON'T override activeVariant from DB - use what's shown on the page
+                    document.getElementById('active-variant').textContent = activeVariant;
+                    document.getElementById('regen-count').textContent = data.scores.regeneration_count || 0;
+                }
+            } catch (err) {
+                console.log('Could not fetch scores:', err);
+            }
+        }
+
+        // Start checking for SDK
+        setTimeout(initDebug, 1000);
+
+        // Track hovers on products
+        document.querySelectorAll('.product-card').forEach(card => {
+            let hoverStart = 0;
+
+            card.addEventListener('mouseenter', () => {
+                hoverStart = Date.now();
+            });
+
+            card.addEventListener('mouseleave', async () => {
+                const duration = Date.now() - hoverStart;
+                if (duration > 2000 && window.HtmlAI && window.HtmlAI.scoreInteraction) {
+                    // Long hover (> 2s) - engagement signal
+                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'hover_long', activeVariant);
+                    updateScoreDisplay(result);
+                    showToast('Long hover detected (+0.5)');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

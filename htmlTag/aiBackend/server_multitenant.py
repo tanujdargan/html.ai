@@ -567,6 +567,8 @@ async def link_user(
 # ----------------------------------------
 # Event Tracking (Multi-Tenant)
 # ----------------------------------------
+CONVERSION_EVENTS = ["product_click", "add_to_cart", "purchase", "click", "conversion", "cta_click"]
+
 @app.post("/api/events/track")
 async def track_event(
     request: EventTrackingRequest,
@@ -601,6 +603,43 @@ async def track_event(
         {"$inc": {"monthly_events_used": 1}}
     )
 
+    # Automatic Conversion Attribution
+    print(f"[DEBUG] Processing event: {request.event_name} for Client Session: {request.session_id} / Server Session: {session['session_id']}")
+    if request.event_name in CONVERSION_EVENTS:
+        print(f"[DEBUG] Event '{request.event_name}' is a CONVERSION event")
+        
+        # Find the last variant shown to this user (most recent first)
+        # MUST use session['session_id'] (Server ID) because that's what optimize_html uses
+        query = {
+            "business_id": business.business_id,
+            "session_id": session["session_id"],
+            "converted": False
+        }
+        print(f"[DEBUG] Searching for variant with query: {query}")
+        
+        last_variant = variants_collection.find_one(
+            query,
+            sort=[("timestamp", -1)]
+        )
+
+        if last_variant:
+            print(f"[DEBUG] Found variant to convert: {last_variant.get('variant_id')} (ID: {last_variant.get('_id')})")
+            result = variants_collection.update_one(
+                {"_id": last_variant["_id"]},
+                {
+                    "$set": {
+                        "converted": True,
+                        "conversion_timestamp": datetime.utcnow(),
+                        "conversion_event": request.event_name
+                    }
+                }
+            )
+            print(f"[DEBUG] Update result: matched={result.matched_count}, modified={result.modified_count}")
+        else:
+            print("[DEBUG] No non-converted variant found for this session.")
+    else:
+        print(f"[DEBUG] Event '{request.event_name}' is NOT in conversion list: {CONVERSION_EVENTS}")
+
     return {"status": "tracked", "event_name": request.event_name}
 
 
@@ -612,13 +651,15 @@ async def track_events_batch(
     """Track multiple events with business isolation"""
     session = get_or_create_session(business.business_id, request.user_id)
     tracked_count = 0
+    conversion_count = 0
 
     for event_data in request.events:
+        event_name = event_data.get("event_name")
         event = {
             "business_id": business.business_id,
             "user_id": request.user_id,
             "session_id": request.session_id,
-            "event_name": event_data.get("event_name"),
+            "event_name": event_name,
             "component_id": event_data.get("component_id"),
             "properties": event_data.get("properties", {}),
             "global_uid": request.global_uid,
@@ -628,6 +669,36 @@ async def track_events_batch(
         events_collection.insert_one(event)
         session["event_history"].append(event)
         tracked_count += 1
+
+        # Automatic Conversion Attribution
+        if event_name in CONVERSION_EVENTS:
+            print(f"[DEBUG BATCH] Event '{event_name}' is a CONVERSION event for Server Session: {session['session_id']}")
+            last_variant = variants_collection.find_one(
+                {
+                    "business_id": business.business_id,
+                    "session_id": session["session_id"],
+                    "converted": False
+                },
+                sort=[("timestamp", -1)]
+            )
+
+            if last_variant:
+                print(f"[DEBUG BATCH] Found variant to convert: {last_variant.get('variant_id')}")
+                variants_collection.update_one(
+                    {"_id": last_variant["_id"]},
+                    {
+                        "$set": {
+                            "converted": True,
+                            "conversion_timestamp": datetime.utcnow(),
+                            "conversion_event": event_name
+                        }
+                    }
+                )
+                conversion_count += 1
+            else:
+                print("[DEBUG BATCH] No variant found to convert")
+        else:
+             print(f"[DEBUG BATCH] Event '{event_name}' ignored for conversion")
 
     users_collection.update_one(
         {"business_id": business.business_id, "user_id": request.user_id},
@@ -640,7 +711,11 @@ async def track_events_batch(
         {"$inc": {"monthly_events_used": tracked_count}}
     )
 
-    return {"status": "tracked", "events_count": tracked_count}
+    return {
+        "status": "tracked", 
+        "events_count": tracked_count,
+        "conversions_attributed": conversion_count
+    }
 
 
 # ----------------------------------------

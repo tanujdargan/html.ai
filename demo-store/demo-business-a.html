@@ -3,101 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShoeMax - Premium Footwear (Business A)</title>
+    <title>Shoopify - Premium Footwear</title>
+
+    <!-- Shopify Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
-            color: #1a1a1a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #202223;
+            background: #f7f7f7;
+            font-size: 14px;
+        }
+
+        /* Header */
         header {
-            background: #1a1a1a;
-            color: white;
-            padding: 1rem 2rem;
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .logo { font-size: 1.5rem; font-weight: 700; }
-        .business-badge {
-            background: #4CAF50;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #202223;
+            text-decoration: none;
         }
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
+
+        nav {
+            display: flex;
+            gap: 32px;
         }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-        .hero p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; }
-        .cta-btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
+
+        nav a {
+            color: #202223;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #5c5f62;
+        }
+
+        .cart-icon {
+            position: relative;
             cursor: pointer;
-            transition: transform 0.2s;
         }
-        .cta-btn:hover { transform: scale(1.05); }
-        .products {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .product-card:hover { transform: translateY(-4px); }
-        .product-img {
-            width: 100%;
-            height: 200px;
-            background: #e0e0e0;
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #008060;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
-            cursor: pointer;
-        }
-        .product-info { padding: 1.5rem; }
-        .product-info h3 { margin-bottom: 0.5rem; }
-        .product-info .price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 1rem;
-        }
-        .add-to-cart-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
+            font-size: 11px;
             font-weight: 600;
+        }
+
+        /* Hero Banner */
+        .hero {
+            background: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #202223;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #6d7175;
+        }
+
+        .hero button {
+            background: #008060;
+            color: white;
+            padding: 18px 48px;
+            font-size: 16px;
+            border: none;
             border-radius: 6px;
             cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,128,96,0.2);
+        }
+
+        .hero button:hover {
+            background: #006e52;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,128,96,0.3);
+        }
+
+        /* Products Section */
+        .products {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .products h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: #202223;
+            font-weight: 600;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #e1e3e5;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .product-image {
             width: 100%;
-            transition: background 0.2s;
+            height: 280px;
+            background: #f6f6f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
         }
-        .add-to-cart-btn:hover { background: #5a6fd6; }
-        .add-to-cart-btn.added {
-            background: #4CAF50;
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
+
+        .product-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #008060;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-vendor {
+            font-size: 12px;
+            color: #6d7175;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .product-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #202223;
+            font-weight: 600;
+        }
+
+        .product-reviews {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .review-count {
+            color: #6d7175;
+            font-size: 13px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: #202223;
+            margin-bottom: 16px;
+        }
+
+        .product-price .original {
+            font-size: 16px;
+            color: #6d7175;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .product-info button {
+            width: 100%;
+            background: #202223;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .product-info button:hover {
+            background: #44474a;
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: #202223;
+            color: white;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .demo-banner strong {
+            color: #95f3d9;
+        }
+
+        /* Debug Panel */
         .debug-panel {
             position: fixed;
             bottom: 20px;
@@ -108,119 +298,177 @@
             border-radius: 8px;
             font-family: monospace;
             font-size: 0.75rem;
-            max-width: 400px;
+            max-width: 350px;
             z-index: 1000;
         }
-        .debug-panel h4 { color: #4CAF50; margin-bottom: 0.5rem; }
-        .debug-item { margin: 0.25rem 0; }
-        .debug-label { color: #888; }
-        .score-display {
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #333;
+
+        .debug-panel h4 {
+            color: #4CAF50;
+            margin-bottom: 0.5rem;
         }
-        .score-bar {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.25rem;
+
+        .debug-item {
+            margin: 0.25rem 0;
         }
-        .score-a, .score-b {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
+
+        .debug-label {
+            color: #888;
         }
-        .score-a { background: #667eea; color: white; }
-        .score-b { background: #e74c3c; color: white; }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
+
+        .cross-site-tag {
+            background: #27ae60;
             color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-            z-index: 2000;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            margin-left: 0.5rem;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
+
+        .cross-site-link a:hover {
+            text-decoration: underline;
         }
-        .toast.success { background: #4CAF50; }
-        .toast.regenerate { background: #ff9800; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">ShoeMax</div>
-        <span class="business-badge">Business A - biz_shoes</span>
-    </header>
-
-    <!-- AI-Optimized Hero Section -->
-    <ai-optimize component-id="hero-shoes" data-active-variant="A">
-        <div class="hero">
-            <h1 data-ai="headline">Premium Footwear Collection</h1>
-            <p data-ai="subheadline">Step into comfort and style</p>
-            <button class="cta-btn" data-ai="cta" onclick="handleCtaClick()">Shop Now</button>
-        </div>
-    </ai-optimize>
-
-    <div class="products">
-        <div class="product-card" data-track-hover data-component-id="product-shoes-1" data-product-name="Air Max Pro" data-price="149.99">
-            <div class="product-img" onclick="handleProductClick('product-shoes-1', 'Air Max Pro')">Running Shoes</div>
-            <div class="product-info">
-                <h3>Air Max Pro</h3>
-                <p class="price">$149.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-1', 'Air Max Pro', 149.99)">Add to Cart</button>
-            </div>
-        </div>
-        <div class="product-card" data-track-hover data-component-id="product-shoes-2" data-product-name="Urban Classic" data-price="89.99">
-            <div class="product-img" onclick="handleProductClick('product-shoes-2', 'Urban Classic')">Casual Sneakers</div>
-            <div class="product-info">
-                <h3>Urban Classic</h3>
-                <p class="price">$89.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-2', 'Urban Classic', 89.99)">Add to Cart</button>
-            </div>
-        </div>
-        <div class="product-card" data-track-hover data-component-id="product-shoes-3" data-product-name="Trail Master" data-price="199.99">
-            <div class="product-img" onclick="handleProductClick('product-shoes-3', 'Trail Master')">Hiking Boots</div>
-            <div class="product-info">
-                <h3>Trail Master</h3>
-                <p class="price">$199.99</p>
-                <button class="add-to-cart-btn" onclick="handleAddToCart(event, 'product-shoes-3', 'Trail Master', 199.99)">Add to Cart</button>
-            </div>
-        </div>
+    <!-- Demo Info Banner -->
+    <div class="demo-banner">
+        <strong>Business A - Shoe Store</strong> | Cross-site tracking enabled | html.ai Demo
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
-
-    <!-- Debug Panel -->
-    <div class="debug-panel">
-        <h4>html.ai Debug + Scoring</h4>
-        <div class="debug-item"><span class="debug-label">Business:</span> biz_shoes (Business A)</div>
-        <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
-        <div class="debug-item"><span class="debug-label">Global UID:</span> <span id="debug-guid">syncing...</span></div>
-        <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
-        <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
-        <div class="score-display">
-            <div class="debug-label">Hero Component Scores:</div>
-            <div class="score-bar">
-                <span class="score-a">A: <span id="score-a">0.00</span></span>
-                <span class="score-b">B: <span id="score-b">0.00</span></span>
-            </div>
-            <div class="debug-item" style="margin-top: 0.25rem;">
-                <span class="debug-label">Active Variant:</span> <span id="active-variant">A</span>
-            </div>
-            <div class="debug-item">
-                <span class="debug-label">Regenerations:</span> <span id="regen-count">0</span>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">Shoopify</a>
+            <nav>
+                <a href="#">Running</a>
+                <a href="#">Casual</a>
+                <a href="#">Hiking</a>
+                <a href="#">Sale</a>
+            </nav>
+            <div class="cart-icon">
+                <span>🛒</span>
+                <div class="cart-count">0</div>
             </div>
         </div>
+    </header>
+
+    <!-- Hero Section -->
+    <!-- AI-Optimized Hero Section -->
+    <ai-optimize component-id="hero-shoes">
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">New Arrivals</div>
+                <h1 data-ai="headline">Step into Premium Comfort</h1>
+                <p data-ai="subheadline">Discover our curated collection of premium footwear with free shipping on orders over $50</p>
+                <button id="hero-cta" data-ai="cta">Shop Collection</button>
+            </div>
+        </section>
+    </ai-optimize>
+
+    <!-- Products Grid -->
+    <section class="products">
+        <h2>Trending Footwear</h2>
+        <div class="product-grid">
+            <!-- Product 1 -->
+            <div class="product-card" data-product-id="shoe-1">
+                <div class="product-image">
+                    <div class="product-badge">Best Seller</div>
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop" alt="Running Shoes">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Nike</div>
+                    <h3>Air Max Pro Runner</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(342 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $149.99
+                        <span class="original">$189.99</span>
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 2 -->
+            <div class="product-card" data-product-id="shoe-2">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop" alt="Sneakers">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Adidas</div>
+                    <h3>Classic Street Sneakers</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(198 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $89.99
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="product-card" data-product-id="shoe-3">
+                <div class="product-image">
+                    <div class="product-badge">New</div>
+                    <img src="https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=400&h=400&fit=crop" alt="Hiking Boots">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Timberland</div>
+                    <h3>Trail Master Hiking Boots</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★★</span>
+                        <span class="review-count">(276 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $199.99
+                        <span class="original">$249.99</span>
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="product-card" data-product-id="shoe-4">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400&h=400&fit=crop" alt="Dress Shoes">
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Clarks</div>
+                    <h3>Executive Dress Shoes</h3>
+                    <div class="product-reviews">
+                        <span class="stars">★★★★☆</span>
+                        <span class="review-count">(124 reviews)</span>
+                    </div>
+                    <div class="product-price">
+                        $159.99
+                    </div>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Debug Panel -->
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h4>html.ai Debug</h4>
+        <div class="debug-item"><span class="debug-label">Business:</span> biz_shoes (Business A)</div>
+        <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
+        <div class="debug-item">
+            <span class="debug-label">Global UID:</span>
+            <span id="debug-guid">syncing...</span>
+            <span class="cross-site-tag" id="cross-site-tag" style="display:none">CROSS-SITE</span>
+        </div>
+        <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
+        <div class="debug-item" id="cross-site-info" style="display:none; color: #27ae60;">
+            <span class="debug-label">Cross-Site Data:</span> Linked to global profile
+        </div>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
-            <a href="demo-business-b.html" style="color: #4CAF50;">Visit Business B (Clothes)</a>
+            <a href="demo-business-b.html" style="color: #008060;">Visit Business B (Clothes)</a>
         </div>
     </div>
 
@@ -235,98 +483,6 @@
     <script>
         // Update debug panel
         let eventCount = 0;
-        let activeVariant = 'A';
-
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast show ' + type;
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3000);
-        }
-
-        // Update score display
-        function updateScoreDisplay(result) {
-            if (result) {
-                document.getElementById('score-a').textContent = (result.variant_a_score || 0).toFixed(2);
-                document.getElementById('score-b').textContent = (result.variant_b_score || 0).toFixed(2);
-                document.getElementById('active-variant').textContent = activeVariant;
-
-                if (result.should_regenerate) {
-                    document.getElementById('regen-count').textContent =
-                        parseInt(document.getElementById('regen-count').textContent) + 1;
-                    showToast(`Regenerating variant ${result.regenerate_variant}! Score diff: ${result.score_difference.toFixed(2)}`, 'regenerate');
-                }
-            }
-        }
-
-        // Handle CTA button click (high value action)
-        async function handleCtaClick() {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            if (window.HtmlAI && window.HtmlAI.scoreInteraction) {
-                const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'cta_click', activeVariant);
-                updateScoreDisplay(result);
-                showToast('CTA Click scored (+3.0)');
-            }
-        }
-
-        // Handle product click
-        async function handleProductClick(componentId, productName) {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            if (window.HtmlAI) {
-                // Track basic event
-                window.HtmlAI.track('product_click', componentId, { product_name: productName });
-
-                // Score the interaction
-                if (window.HtmlAI.scoreInteraction) {
-                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'click', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast('Product Click scored (+1.0)');
-                }
-            }
-        }
-
-        // Handle add to cart (high value action)
-        async function handleAddToCart(e, componentId, productName, price) {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-
-            // Visual feedback
-            const btn = e.target;
-            btn.textContent = 'Added!';
-            btn.classList.add('added');
-            setTimeout(() => {
-                btn.textContent = 'Add to Cart';
-                btn.classList.remove('added');
-            }, 2000);
-
-            if (window.HtmlAI) {
-                // Track event
-                window.HtmlAI.track('add_to_cart', componentId, {
-                    product_name: productName,
-                    price: price
-                });
-
-                // Score the interaction (add_to_cart has weight 5.0)
-                if (window.HtmlAI.scoreInteraction) {
-                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'add_to_cart', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast(`Added ${productName} to cart! Scored (+5.0)`, 'success');
-                }
-            }
-        }
-
-        // Listen for regeneration events
-        window.addEventListener('htmlai:regenerate', (event) => {
-            console.log('Regeneration triggered:', event.detail);
-            showToast(`Component regenerating variant ${event.detail.variant}!`, 'regenerate');
-        });
 
         // Wait for SDK to initialize
         function initDebug() {
@@ -341,55 +497,30 @@
 
             if (user.global_uid) {
                 document.getElementById('debug-guid').textContent = user.global_uid;
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
             }
 
             // Listen for cross-site sync
             window.HtmlAI.onSync((guid) => {
                 document.getElementById('debug-guid').textContent = guid;
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
             });
-
-            // Fetch initial scores
-            fetchScores();
-        }
-
-        // Fetch current scores from server
-        async function fetchScores() {
-            try {
-                const user = window.HtmlAI.getUser();
-                const response = await fetch(`http://localhost:3000/api/scoring/user/${user.user_id}?component_id=hero-shoes`, {
-                    headers: { 'X-API-Key': 'pk_demo_shoes_123' }
-                });
-                const data = await response.json();
-                if (data.scores) {
-                    document.getElementById('score-a').textContent = (data.scores.variant_a?.current_score || 0).toFixed(2);
-                    document.getElementById('score-b').textContent = (data.scores.variant_b?.current_score || 0).toFixed(2);
-                    // DON'T override activeVariant from DB - use what's shown on the page
-                    document.getElementById('active-variant').textContent = activeVariant;
-                    document.getElementById('regen-count').textContent = data.scores.regeneration_count || 0;
-                }
-            } catch (err) {
-                console.log('Could not fetch scores:', err);
-            }
         }
 
         // Start checking for SDK
         setTimeout(initDebug, 1000);
 
-        // Track hovers on products
+        // Track clicks on products
         document.querySelectorAll('.product-card').forEach(card => {
-            let hoverStart = 0;
-
-            card.addEventListener('mouseenter', () => {
-                hoverStart = Date.now();
-            });
-
-            card.addEventListener('mouseleave', async () => {
-                const duration = Date.now() - hoverStart;
-                if (duration > 2000 && window.HtmlAI && window.HtmlAI.scoreInteraction) {
-                    // Long hover (> 2s) - engagement signal
-                    const result = await window.HtmlAI.scoreInteraction('hero-shoes', 'hover_long', activeVariant);
-                    updateScoreDisplay(result);
-                    showToast('Long hover detected (+0.5)');
+            card.addEventListener('click', () => {
+                eventCount++;
+                document.getElementById('debug-events').textContent = eventCount;
+                if (window.HtmlAI && window.HtmlAI.track) {
+                    window.HtmlAI.track('product_click', card.dataset.productId, {
+                        product_name: card.querySelector('h3').textContent
+                    });
                 }
             });
         });
