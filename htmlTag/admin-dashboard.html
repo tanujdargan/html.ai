@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>html.ai - Business Dashboard</title>
+    <title>html.ai - Analytics Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,16 +27,11 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: #38bdf8;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
         }
-        .business-select {
-            width: 100%;
-            padding: 0.5rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #e2e8f0;
-            margin-bottom: 1.5rem;
+        .logo span {
+            color: #94a3b8;
+            font-weight: 400;
             font-size: 0.875rem;
         }
         .nav-item {
@@ -47,6 +42,7 @@
             border-radius: 8px;
             margin-bottom: 0.25rem;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .nav-item:hover, .nav-item.active {
             background: #334155;
@@ -61,21 +57,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
         }
         .header h1 { font-size: 1.5rem; }
-        .api-key-display {
-            background: #1e293b;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.875rem;
-            color: #38bdf8;
-        }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -98,7 +84,6 @@
         .stat-card .value.blue { color: #38bdf8; }
         .stat-card .value.purple { color: #a78bfa; }
         .stat-card .value.yellow { color: #fbbf24; }
-        .stat-card .value.red { color: #f87171; }
         .card {
             background: #1e293b;
             border-radius: 12px;
@@ -109,29 +94,7 @@
         .card h2 {
             font-size: 1.125rem;
             margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-        .badge {
-            background: #334155;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        .badge.active { background: #166534; color: #4ade80; }
-        .badge.pending { background: #854d0e; color: #fbbf24; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #334155;
-        }
-        th { color: #94a3b8; font-weight: 500; font-size: 0.875rem; }
         .btn {
             padding: 0.5rem 1rem;
             border-radius: 6px;
@@ -143,71 +106,225 @@
         }
         .btn:hover { opacity: 0.9; }
         .btn-primary { background: #38bdf8; color: #0f172a; }
-        .btn-success { background: #4ade80; color: #0f172a; }
-        .btn-danger { background: #f87171; color: #0f172a; }
         .btn-secondary { background: #475569; color: #f1f5f9; }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #94a3b8;
-            font-size: 0.875rem;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #e2e8f0;
-            font-size: 0.875rem;
-        }
         .section { display: none; }
         .section.active { display: block; }
-        .partner-card {
+
+        /* Carousel Styles */
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+        .carousel::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        .carousel::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .variant-card {
+            flex: 0 0 320px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .variant-card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.15);
+        }
+        .variant-preview {
+            height: 200px;
+            background: white;
+            overflow: hidden;
+            position: relative;
+        }
+        .variant-preview iframe {
+            width: 200%;
+            height: 200%;
+            transform: scale(0.5);
+            transform-origin: top left;
+            border: none;
+            pointer-events: none;
+        }
+        .variant-info {
+            padding: 1rem;
+        }
+        .variant-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            background: #0f172a;
-            border-radius: 8px;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
-        .partner-info h4 { margin-bottom: 0.25rem; }
-        .partner-info span { color: #94a3b8; font-size: 0.875rem; }
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+        .variant-label {
+            font-weight: 600;
+            font-size: 1rem;
         }
-        .alert-info { background: #1e3a5f; border: 1px solid #38bdf8; }
-        .alert-success { background: #14532d; border: 1px solid #4ade80; }
-        .alert-error { background: #7f1d1d; border: 1px solid #f87171; }
-        .event-list {
-            max-height: 400px;
+        .variant-label.a { color: #4ade80; }
+        .variant-label.b { color: #f472b6; }
+        .variant-score {
+            background: #334155;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .variant-score.winner {
+            background: #166534;
+            color: #4ade80;
+        }
+        .variant-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #1e293b;
+            border-radius: 16px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+        .modal-header h2 {
+            margin: 0;
+        }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #f1f5f9;
+        }
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
             overflow-y: auto;
         }
-        .event-item {
-            padding: 0.75rem;
-            background: #0f172a;
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
+        .modal-preview {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 400px;
+        }
+        .modal-preview iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            border: none;
+        }
+        .modal-code {
+            display: flex;
+            flex-direction: column;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .code-header h3 {
             font-size: 0.875rem;
-        }
-        .event-item .event-name {
-            color: #38bdf8;
-            font-weight: 500;
-        }
-        .event-item .event-time {
-            color: #64748b;
-            font-size: 0.75rem;
-        }
-        .event-item .event-details {
             color: #94a3b8;
-            margin-top: 0.25rem;
         }
+        .copy-btn {
+            background: #334155;
+            border: none;
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #475569;
+            color: #f1f5f9;
+        }
+        .copy-btn.copied {
+            background: #166534;
+            color: #4ade80;
+        }
+        .code-block {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow: auto;
+            flex: 1;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+        }
+        .code-block .tag { color: #f472b6; }
+        .code-block .attr { color: #38bdf8; }
+        .code-block .value { color: #4ade80; }
+        .code-block .text { color: #e2e8f0; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+
+        /* Refresh Button */
         .refresh-btn {
             background: transparent;
             border: 1px solid #334155;
@@ -216,39 +333,45 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.875rem;
+            transition: all 0.2s;
         }
         .refresh-btn:hover {
             background: #334155;
             color: #f1f5f9;
         }
+
+        /* Loading */
         .loading {
             color: #64748b;
             font-style: italic;
         }
-        .cross-site-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #4ade80;
-            border-radius: 50%;
-            margin-right: 0.5rem;
+
+        /* User filter */
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .filter-bar select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
     <nav class="sidebar">
-        <div class="logo">html.ai</div>
-        <select class="business-select" id="business-select" onchange="switchBusiness()">
-            <option value="pk_demo_shoes_123">ShoeMax (Business A)</option>
-            <option value="pk_demo_clothes_456">StyleHub (Business B)</option>
-            <option value="pk_demo_test123">Demo Store</option>
-        </select>
+        <div class="logo">
+            html.ai
+            <br><span>Analytics Dashboard</span>
+        </div>
         <a class="nav-item active" onclick="showSection('overview')">Overview</a>
-        <a class="nav-item" onclick="showSection('events')">Live Events</a>
-        <a class="nav-item" onclick="showSection('users')">Users</a>
-        <a class="nav-item" onclick="showSection('cross-site')">Cross-Site</a>
-        <a class="nav-item" onclick="showSection('partners')">Data Partners</a>
-        <a class="nav-item" onclick="showSection('settings')">Settings</a>
+        <a class="nav-item" onclick="showSection('variants')">Variant Gallery</a>
+        <a class="nav-item" onclick="showSection('users')">User Lookup</a>
     </nav>
 
     <main class="main">
@@ -256,218 +379,125 @@
         <section id="overview" class="section active">
             <div class="header">
                 <h1>Dashboard Overview</h1>
-                <button class="refresh-btn" onclick="loadDashboard()">Refresh</button>
+                <button class="refresh-btn" onclick="loadOverview()">Refresh</button>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Total Events</h3>
-                    <div class="value blue" id="stat-events">-</div>
+                    <h3>Total Users</h3>
+                    <div class="value blue" id="stat-users">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Unique Users</h3>
-                    <div class="value green" id="stat-users">-</div>
+                    <h3>Total Trials</h3>
+                    <div class="value purple" id="stat-trials">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Conversion Rate</h3>
-                    <div class="value purple" id="stat-conversion">-</div>
+                    <h3>Variant A Wins</h3>
+                    <div class="value green" id="stat-a-wins">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Cross-Site Users</h3>
-                    <div class="value yellow" id="stat-crosssite">-</div>
+                    <h3>Variant B Wins</h3>
+                    <div class="value yellow" id="stat-b-wins">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Events This Month</h3>
-                    <div class="value red" id="stat-monthly">-</div>
+                    <h3>Avg Score A</h3>
+                    <div class="value green" id="stat-a-score">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Score B</h3>
+                    <div class="value yellow" id="stat-b-score">-</div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Variant Performance</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Variant</th>
-                            <th>Identity State</th>
-                            <th>Shown</th>
-                            <th>Conversions</th>
-                            <th>Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody id="variant-table">
-                        <tr><td colspan="5" class="loading">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card">
-                <h2>Recent Activity</h2>
-                <div id="recent-events" class="event-list">
-                    <p class="loading">Loading...</p>
+                <h2>Latest Variants</h2>
+                <div class="carousel-container">
+                    <div class="carousel" id="overview-carousel">
+                        <p class="loading">Loading variants...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Live Events Section -->
-        <section id="events" class="section">
+        <!-- Variants Gallery Section -->
+        <section id="variants" class="section">
             <div class="header">
-                <h1>Live Events</h1>
-                <button class="refresh-btn" onclick="loadEvents()">Refresh</button>
+                <h1>Variant Gallery</h1>
+                <button class="refresh-btn" onclick="loadVariants()">Refresh</button>
+            </div>
+
+            <div class="filter-bar">
+                <label>Filter by user:</label>
+                <select id="user-filter" onchange="filterVariants()">
+                    <option value="all">All Users</option>
+                </select>
+                <label>Filter by variant:</label>
+                <select id="variant-filter" onchange="filterVariants()">
+                    <option value="all">All Variants</option>
+                    <option value="A">Variant A</option>
+                    <option value="B">Variant B</option>
+                </select>
             </div>
 
             <div class="card">
-                <h2>Event Stream</h2>
-                <div id="event-stream" class="event-list">
-                    <p class="loading">Loading events...</p>
+                <div class="carousel-container">
+                    <div class="carousel" id="variants-carousel">
+                        <p class="loading">Loading variants...</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Users Section -->
+        <!-- User Lookup Section -->
         <section id="users" class="section">
             <div class="header">
-                <h1>Users</h1>
-                <button class="refresh-btn" onclick="loadUsers()">Refresh</button>
+                <h1>User Lookup</h1>
             </div>
 
             <div class="card">
                 <h2>Search User</h2>
-                <div class="form-group">
-                    <label>User ID</label>
-                    <input type="text" id="search-user-id" placeholder="user_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-                </div>
-                <button class="btn btn-primary" onclick="searchUser()">Search</button>
-            </div>
-
-            <div class="card">
-                <h2>User Journey</h2>
-                <div id="user-journey-result">
-                    <p style="color:#64748b;">Enter a user ID above to view their journey</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Cross-Site Section -->
-        <section id="cross-site" class="section">
-            <div class="header">
-                <h1>Cross-Site Tracking</h1>
-                <button class="refresh-btn" onclick="loadCrossSite()">Refresh</button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Global Users Linked</h3>
-                    <div class="value green" id="global-users-count">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Partner Businesses</h3>
-                    <div class="value blue" id="partner-count">-</div>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" id="user-search" placeholder="Enter user ID..."
+                           style="flex: 1; padding: 0.75rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0;">
+                    <button class="btn btn-primary" onclick="searchUser()">Search</button>
                 </div>
             </div>
 
-            <div class="card">
-                <h2>Cross-Site User Journeys</h2>
-                <div id="cross-site-journeys">
-                    <p class="loading">Loading cross-site data...</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Global User Lookup</h2>
-                <div class="form-group">
-                    <label>Global UID</label>
-                    <input type="text" id="global-uid-search" placeholder="guid_xxxxxxxxxx">
-                </div>
-                <button class="btn btn-primary" onclick="lookupGlobalUser()">Lookup</button>
-                <div id="global-user-result" style="margin-top:1rem;"></div>
-            </div>
-        </section>
-
-        <!-- Partners Section -->
-        <section id="partners" class="section">
-            <div class="header">
-                <h1>Data Partners</h1>
-                <button class="btn btn-primary" onclick="showAddPartner()">+ Add Partner</button>
-            </div>
-
-            <div class="card" id="add-partner-form" style="display:none;">
-                <h2>Request Data Sharing</h2>
-                <div class="form-group">
-                    <label>Partner Business ID</label>
-                    <input type="text" id="partner-business-id" placeholder="biz_xxxxx">
-                </div>
-                <div class="form-group">
-                    <label>Sharing Level</label>
-                    <select id="sharing-level">
-                        <option value="aggregate">Aggregate (Behavioral profiles only)</option>
-                        <option value="full">Full (Complete user journeys)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="share-conversions"> Share conversion data
-                    </label>
-                </div>
-                <button class="btn btn-success" onclick="requestPartnership()">Send Request</button>
-                <button class="btn btn-secondary" onclick="hideAddPartner()">Cancel</button>
-            </div>
-
-            <div class="card">
-                <h2>Active Partners</h2>
-                <div id="active-partners">
-                    <p class="loading">Loading...</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Pending Requests</h2>
-                <div id="pending-requests">
-                    <p class="loading">Loading...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Settings Section -->
-        <section id="settings" class="section">
-            <div class="header">
-                <h1>Settings</h1>
-            </div>
-
-            <div class="card">
-                <h2>Current Business</h2>
-                <div id="business-info">
-                    <p class="loading">Loading...</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>API Credentials</h2>
-                <div class="form-group">
-                    <label>Public API Key</label>
-                    <input type="text" id="display-api-key" readonly>
-                </div>
-                <p style="color:#64748b;font-size:0.875rem;margin-top:0.5rem;">
-                    Use this key in your SDK integration. It's safe to expose in frontend code.
-                </p>
-            </div>
+            <div id="user-result"></div>
         </section>
     </main>
 
+    <!-- Modal for expanded view -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modal-title">Variant Details</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-preview">
+                    <iframe id="modal-preview-frame"></iframe>
+                </div>
+                <div class="modal-code">
+                    <div class="code-header">
+                        <h3>HTML Code</h3>
+                        <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy Code</button>
+                    </div>
+                    <div class="code-block" id="modal-code"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const API_URL = 'http://localhost:3000';
-        let currentApiKey = 'pk_demo_shoes_123';
+        const ANALYTICS_API = 'http://localhost:3001';
+        let allVariants = [];
+        let currentModalHtml = '';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('display-api-key').value = currentApiKey;
-            loadDashboard();
+            loadOverview();
         });
-
-        function switchBusiness() {
-            currentApiKey = document.getElementById('business-select').value;
-            document.getElementById('display-api-key').value = currentApiKey;
-            loadDashboard();
-        }
 
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -475,159 +505,199 @@
             document.getElementById(sectionId).classList.add('active');
             event.target.classList.add('active');
 
-            // Load section data
-            if (sectionId === 'overview') loadDashboard();
-            if (sectionId === 'events') loadEvents();
-            if (sectionId === 'users') loadUsers();
-            if (sectionId === 'cross-site') loadCrossSite();
-            if (sectionId === 'partners') loadPartners();
-            if (sectionId === 'settings') loadSettings();
+            if (sectionId === 'overview') loadOverview();
+            if (sectionId === 'variants') loadVariants();
         }
 
-        async function loadDashboard() {
+        async function loadOverview() {
             try {
-                // Fetch dashboard stats
-                const res = await fetch(`${API_URL}/api/analytics/dashboard`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
+                // Load stats
+                const statsRes = await fetch(`${ANALYTICS_API}/api/stats/overview`);
+                const stats = await statsRes.json();
 
-                if (!res.ok) {
-                    throw new Error(`API error: ${res.status}`);
-                }
+                document.getElementById('stat-users').textContent = stats.total_users || 0;
+                document.getElementById('stat-trials').textContent = stats.total_trials || 0;
+                document.getElementById('stat-a-wins').textContent = stats.variant_a?.wins || 0;
+                document.getElementById('stat-b-wins').textContent = stats.variant_b?.wins || 0;
+                document.getElementById('stat-a-score').textContent = stats.variant_a?.avg_score || 0;
+                document.getElementById('stat-b-score').textContent = stats.variant_b?.avg_score || 0;
 
-                const data = await res.json();
-                console.log('Dashboard data:', data);
+                // Load variants for carousel
+                const variantsRes = await fetch(`${ANALYTICS_API}/api/variants/all`);
+                const variantsData = await variantsRes.json();
+                allVariants = variantsData.variants || [];
 
-                document.getElementById('stat-events').textContent = data.total_events || 0;
-                document.getElementById('stat-users').textContent = data.total_users || 0;
-
-                // Calculate conversion rate
-                let totalShown = 0, totalConv = 0;
-                if (data.variant_performance && data.variant_performance.length > 0) {
-                    data.variant_performance.forEach(v => {
-                        totalShown += v.total_shown || 0;
-                        totalConv += v.conversions || 0;
-                    });
-                }
-                const convRate = totalShown > 0 ? ((totalConv / totalShown) * 100).toFixed(1) : '0';
-                document.getElementById('stat-conversion').textContent = convRate + '%';
-
-                // Render variant table
-                const tbody = document.getElementById('variant-table');
-                if (data.variant_performance && data.variant_performance.length > 0) {
-                    tbody.innerHTML = data.variant_performance.map(v => `
-                        <tr>
-                            <td>${v._id?.variant_id || 'N/A'}</td>
-                            <td><span class="badge">${v._id?.identity_state || 'N/A'}</span></td>
-                            <td>${v.total_shown || 0}</td>
-                            <td>${v.conversions || 0}</td>
-                            <td>${((v.conversion_rate || 0) * 100).toFixed(1)}%</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="color:#64748b;">No variant data yet. Browse the demo stores to generate data.</td></tr>';
-                }
-
-                // Load recent events for overview
-                loadRecentEvents();
-
-                // Try to get business info for monthly usage
-                try {
-                    const bizRes = await fetch(`${API_URL}/api/business/me`, {
-                        headers: { 'X-API-Key': currentApiKey }
-                    });
-                    if (bizRes.ok) {
-                        const bizData = await bizRes.json();
-                        document.getElementById('stat-monthly').textContent = bizData.usage?.events_used || 0;
-                        document.getElementById('stat-crosssite').textContent = bizData.usage?.partners_count || 0;
-                    }
-                } catch (e) {
-                    console.log('Could not fetch business info');
-                }
+                renderCarousel('overview-carousel', allVariants.slice(0, 10));
 
             } catch (err) {
-                console.error('Failed to load dashboard:', err);
-                document.getElementById('stat-events').textContent = 'Error';
+                console.error('Failed to load overview:', err);
+                document.getElementById('overview-carousel').innerHTML =
+                    '<div class="empty-state"><h3>Could not load data</h3><p>Make sure the analytics server is running on port 3001</p></div>';
             }
         }
 
-        async function loadRecentEvents() {
-            const container = document.getElementById('recent-events');
+        async function loadVariants() {
             try {
-                // Get a sample user to show events
-                const res = await fetch(`${API_URL}/api/analytics/dashboard`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
+                const res = await fetch(`${ANALYTICS_API}/api/variants/all`);
                 const data = await res.json();
+                allVariants = data.variants || [];
 
-                if (data.total_events > 0) {
-                    container.innerHTML = `
-                        <div class="alert alert-info">
-                            <strong>${data.total_events}</strong> events tracked across <strong>${data.total_users}</strong> users.
-                            <br><br>
-                            Use the "Live Events" tab or "Users" tab to explore detailed event data.
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div class="alert alert-info">
-                            No events recorded yet. Visit the demo stores to generate tracking data:
-                            <br><br>
-                            <a href="http://localhost:8082/demo-business-a.html" target="_blank" style="color:#38bdf8;">Business A (ShoeMax)</a> |
-                            <a href="http://localhost:8082/demo-business-b.html" target="_blank" style="color:#38bdf8;">Business B (StyleHub)</a>
-                        </div>
-                    `;
-                }
+                // Populate user filter
+                const users = [...new Set(allVariants.map(v => v.user_id))];
+                const userFilter = document.getElementById('user-filter');
+                userFilter.innerHTML = '<option value="all">All Users</option>' +
+                    users.map(u => `<option value="${u}">${u.substring(0, 20)}...</option>`).join('');
+
+                renderCarousel('variants-carousel', allVariants);
+
             } catch (err) {
-                container.innerHTML = '<p style="color:#f87171;">Failed to load events</p>';
+                console.error('Failed to load variants:', err);
+                document.getElementById('variants-carousel').innerHTML =
+                    '<div class="empty-state"><h3>Could not load variants</h3><p>Make sure the analytics server is running</p></div>';
             }
         }
 
-        async function loadEvents() {
-            const container = document.getElementById('event-stream');
-            container.innerHTML = '<p class="loading">Loading events...</p>';
+        function filterVariants() {
+            const userFilter = document.getElementById('user-filter').value;
+            const variantFilter = document.getElementById('variant-filter').value;
 
-            try {
-                const res = await fetch(`${API_URL}/api/analytics/dashboard`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-                const data = await res.json();
+            let filtered = allVariants;
 
-                if (data.total_events > 0) {
-                    container.innerHTML = `
-                        <div class="alert alert-info">
-                            <strong>${data.total_events}</strong> total events recorded.
-                            <br><br>
-                            To see individual events, search for a specific user in the Users tab.
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = '<p style="color:#64748b;">No events yet. Browse the demo stores to generate events.</p>';
-                }
-            } catch (err) {
-                container.innerHTML = '<p style="color:#f87171;">Failed to load events</p>';
+            if (userFilter !== 'all') {
+                filtered = filtered.filter(v => v.user_id === userFilter);
             }
+            if (variantFilter !== 'all') {
+                filtered = filtered.filter(v => v.variant === variantFilter);
+            }
+
+            renderCarousel('variants-carousel', filtered);
         }
 
-        async function loadUsers() {
-            // Users section is search-based, no auto-load needed
-        }
+        function renderCarousel(containerId, variants) {
+            const container = document.getElementById(containerId);
 
-        async function searchUser() {
-            const userId = document.getElementById('search-user-id').value.trim();
-            const resultDiv = document.getElementById('user-journey-result');
-
-            if (!userId) {
-                resultDiv.innerHTML = '<p style="color:#f87171;">Please enter a user ID</p>';
+            if (!variants || variants.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No variants yet</h3>
+                        <p>Visit the demo stores to generate A/B variants</p>
+                    </div>
+                `;
                 return;
             }
 
-            resultDiv.innerHTML = '<p class="loading">Searching...</p>';
+            container.innerHTML = variants.map((v, i) => `
+                <div class="variant-card" onclick="openModal('${escapeHtml(v.html)}', '${v.variant}', '${v.user_id}', ${v.score})">
+                    <div class="variant-preview">
+                        <iframe srcdoc="${escapeHtml(wrapHtml(v.html))}" sandbox="allow-same-origin"></iframe>
+                    </div>
+                    <div class="variant-info">
+                        <div class="variant-header">
+                            <span class="variant-label ${v.variant.toLowerCase()}">Variant ${v.variant}</span>
+                            <span class="variant-score ${v.score > 5 ? 'winner' : ''}">Score: ${v.score}</span>
+                        </div>
+                        <div class="variant-meta">
+                            User: ${v.user_id.substring(0, 15)}... | Trials: ${v.trials}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function wrapHtml(html) {
+            // Wrap the HTML snippet in a basic page structure for preview
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: system-ui, sans-serif;
+                            margin: 0;
+                            padding: 16px;
+                            background: #fafafa;
+                        }
+                        * { box-sizing: border-box; }
+                    </style>
+                </head>
+                <body>${html}</body>
+                </html>
+            `;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function openModal(html, variant, userId, score) {
+            // Unescape the HTML for display
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = html;
+            const unescapedHtml = textarea.value;
+
+            currentModalHtml = unescapedHtml;
+
+            document.getElementById('modal-title').textContent =
+                `Variant ${variant} - Score: ${score}`;
+
+            // Set preview iframe
+            const frame = document.getElementById('modal-preview-frame');
+            frame.srcdoc = wrapHtml(unescapedHtml);
+
+            // Set code with syntax highlighting
+            document.getElementById('modal-code').innerHTML = highlightHtml(unescapedHtml);
+
+            // Show modal
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function highlightHtml(html) {
+            // Simple HTML syntax highlighting
+            return html
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="tag">$2</span>')
+                .replace(/([\w-]+)(=)/g, '<span class="attr">$1</span>$2')
+                .replace(/(=)(&quot;|&#39;)([^&]*)(&quot;|&#39;)/g, '$1$2<span class="value">$3</span>$4');
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(currentModalHtml).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy Code';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        async function searchUser() {
+            const userId = document.getElementById('user-search').value.trim();
+            const resultDiv = document.getElementById('user-result');
+
+            if (!userId) {
+                resultDiv.innerHTML = '<div class="card"><p style="color:#f87171;">Please enter a user ID</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="card"><p class="loading">Searching...</p></div>';
 
             try {
-                const res = await fetch(`${API_URL}/api/user/${encodeURIComponent(userId)}/journey`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
+                const res = await fetch(`${ANALYTICS_API}/api/variants/user/${encodeURIComponent(userId)}`);
 
                 if (!res.ok) {
                     throw new Error('User not found');
@@ -636,236 +706,49 @@
                 const data = await res.json();
 
                 resultDiv.innerHTML = `
-                    <div style="background:#0f172a;padding:1rem;border-radius:8px;">
-                        <p><strong>User ID:</strong> ${data.user_id}</p>
-                        <p><strong>Session:</strong> ${data.session?.session_id || 'N/A'}</p>
-                        <p><strong>Identity State:</strong> <span class="badge">${data.session?.identity_state || 'Unknown'}</span></p>
-                        <p><strong>Total Events:</strong> ${data.events?.length || 0}</p>
-
-                        ${data.events && data.events.length > 0 ? `
-                            <h4 style="margin-top:1rem;margin-bottom:0.5rem;">Events:</h4>
-                            <div class="event-list" style="max-height:300px;">
-                                ${data.events.map(e => `
-                                    <div class="event-item">
-                                        <span class="event-name">${e.event_name}</span>
-                                        <span class="event-time">${e.timestamp || ''}</span>
-                                        ${e.component_id ? `<div class="event-details">Component: ${e.component_id}</div>` : ''}
-                                        ${e.global_uid ? `<div class="event-details"><span class="cross-site-indicator"></span>Global UID: ${e.global_uid}</div>` : ''}
+                    <div class="card">
+                        <h2>User: ${data.user_id}</h2>
+                        <p style="margin-bottom: 1rem;">
+                            Current Winner: <strong style="color: ${data.current_winner === 'A' ? '#4ade80' : '#fbbf24'}">
+                                Variant ${data.current_winner}
+                            </strong>
+                            (Difference: ${data.score_difference})
+                        </p>
+                        <div class="carousel">
+                            ${['A', 'B'].map(v => {
+                                const variant = data.variants[v];
+                                return `
+                                    <div class="variant-card" onclick="openModal('${escapeHtml(variant.current_html)}', '${v}', '${data.user_id}', ${variant.current_score})">
+                                        <div class="variant-preview">
+                                            <iframe srcdoc="${escapeHtml(wrapHtml(variant.current_html))}" sandbox="allow-same-origin"></iframe>
+                                        </div>
+                                        <div class="variant-info">
+                                            <div class="variant-header">
+                                                <span class="variant-label ${v.toLowerCase()}">Variant ${v}</span>
+                                                <span class="variant-score ${data.current_winner === v ? 'winner' : ''}">
+                                                    Score: ${variant.current_score}
+                                                </span>
+                                            </div>
+                                            <div class="variant-meta">
+                                                Trials: ${variant.number_of_trials} | History: ${variant.history.length} versions
+                                            </div>
+                                        </div>
                                     </div>
-                                `).join('')}
-                            </div>
-                        ` : '<p style="margin-top:1rem;color:#64748b;">No events recorded</p>'}
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
                 `;
+
             } catch (err) {
-                resultDiv.innerHTML = `<p style="color:#f87171;">User not found or error: ${err.message}</p>`;
+                resultDiv.innerHTML = `<div class="card"><p style="color:#f87171;">User not found: ${err.message}</p></div>`;
             }
         }
 
-        async function loadCrossSite() {
-            try {
-                const res = await fetch(`${API_URL}/api/analytics/cross-site`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-
-                if (!res.ok) {
-                    throw new Error('Failed to load');
-                }
-
-                const data = await res.json();
-
-                document.getElementById('global-users-count').textContent = data.cross_site_users || 0;
-                document.getElementById('partner-count').textContent = data.partner_count || 0;
-
-                const container = document.getElementById('cross-site-journeys');
-                if (data.cross_site_users > 0) {
-                    container.innerHTML = `
-                        <div class="alert alert-success">
-                            <strong>${data.cross_site_users}</strong> users have been tracked across multiple partner sites!
-                        </div>
-                        ${data.sample_journeys ? `
-                            <div style="margin-top:1rem;">
-                                <h4>Sample Cross-Site Users:</h4>
-                                ${data.sample_journeys.slice(0, 5).map(j => `
-                                    <div class="event-item">
-                                        <span class="cross-site-indicator"></span>
-                                        <strong>${j._id}</strong> - ${j.total_events} events across ${j.businesses?.length || 0} sites
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div class="alert alert-info">
-                            No cross-site users detected yet.
-                            <br><br>
-                            To test cross-site tracking:
-                            <ol style="margin-top:0.5rem;margin-left:1rem;">
-                                <li>Visit <a href="http://localhost:8082/demo-business-a.html" target="_blank" style="color:#38bdf8;">Business A</a></li>
-                                <li>Click around and interact</li>
-                                <li>Visit <a href="http://localhost:8082/demo-business-b.html" target="_blank" style="color:#38bdf8;">Business B</a></li>
-                                <li>You should see the "CROSS-SITE" indicator</li>
-                            </ol>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                document.getElementById('cross-site-journeys').innerHTML = '<p style="color:#f87171;">Failed to load cross-site data</p>';
-            }
-        }
-
-        async function lookupGlobalUser() {
-            const guid = document.getElementById('global-uid-search').value.trim();
-            const resultDiv = document.getElementById('global-user-result');
-
-            if (!guid) {
-                resultDiv.innerHTML = '<p style="color:#f87171;">Please enter a Global UID</p>';
-                return;
-            }
-
-            resultDiv.innerHTML = '<p class="loading">Looking up...</p>';
-
-            // For now, just show the GUID - in production this would query the global_users collection
-            resultDiv.innerHTML = `
-                <div style="background:#0f172a;padding:1rem;border-radius:8px;">
-                    <p><strong>Global UID:</strong> ${guid}</p>
-                    <p style="color:#64748b;margin-top:0.5rem;">
-                        Global user lookup requires server-side implementation.
-                        The user is tracked via this GUID across all partner businesses.
-                    </p>
-                </div>
-            `;
-        }
-
-        async function loadPartners() {
-            try {
-                // Get business info to see partners
-                const bizRes = await fetch(`${API_URL}/api/business/me`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-
-                if (bizRes.ok) {
-                    const bizData = await bizRes.json();
-                    const activeContainer = document.getElementById('active-partners');
-
-                    if (bizData.usage?.partners_count > 0) {
-                        activeContainer.innerHTML = `
-                            <div class="alert alert-success">
-                                Connected to ${bizData.usage.partners_count} partner(s)
-                            </div>
-                        `;
-                    } else {
-                        activeContainer.innerHTML = '<p style="color:#64748b;">No active partners</p>';
-                    }
-                }
-
-                // Get pending requests
-                const pendingRes = await fetch(`${API_URL}/api/sharing/pending`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-
-                const pendingContainer = document.getElementById('pending-requests');
-                if (pendingRes.ok) {
-                    const pendingData = await pendingRes.json();
-
-                    if (pendingData.incoming && pendingData.incoming.length > 0) {
-                        pendingContainer.innerHTML = pendingData.incoming.map(a => `
-                            <div class="partner-card">
-                                <div class="partner-info">
-                                    <h4>From: ${a.from_business_id}</h4>
-                                    <span>Level: ${a.sharing_level}</span>
-                                </div>
-                                <div>
-                                    <button class="btn btn-success" onclick="acceptPartner('${a.agreement_id}')">Accept</button>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        pendingContainer.innerHTML = '<p style="color:#64748b;">No pending requests</p>';
-                    }
-                } else {
-                    pendingContainer.innerHTML = '<p style="color:#64748b;">No pending requests</p>';
-                }
-            } catch (err) {
-                console.error('Failed to load partners:', err);
-            }
-        }
-
-        async function loadSettings() {
-            try {
-                const res = await fetch(`${API_URL}/api/business/me`, {
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-
-                const container = document.getElementById('business-info');
-                if (res.ok) {
-                    const data = await res.json();
-                    container.innerHTML = `
-                        <div style="display:grid;gap:0.5rem;">
-                            <p><strong>Business ID:</strong> ${data.business_id}</p>
-                            <p><strong>Name:</strong> ${data.name}</p>
-                            <p><strong>Domain:</strong> ${data.domain}</p>
-                            <p><strong>Tier:</strong> <span class="badge active">${data.tier}</span></p>
-                            <p><strong>Events Used:</strong> ${data.usage?.events_used || 0} / ${data.usage?.events_limit || 'unlimited'}</p>
-                            <p><strong>Cross-Site Tracking:</strong> ${data.features?.cross_site_tracking ? 'Enabled' : 'Disabled'}</p>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = '<p style="color:#f87171;">Could not load business info</p>';
-                }
-            } catch (err) {
-                document.getElementById('business-info').innerHTML = '<p style="color:#f87171;">Error loading settings</p>';
-            }
-        }
-
-        function showAddPartner() {
-            document.getElementById('add-partner-form').style.display = 'block';
-        }
-
-        function hideAddPartner() {
-            document.getElementById('add-partner-form').style.display = 'none';
-        }
-
-        async function requestPartnership() {
-            const partnerId = document.getElementById('partner-business-id').value;
-            const level = document.getElementById('sharing-level').value;
-            const shareConversions = document.getElementById('share-conversions').checked;
-
-            try {
-                const res = await fetch(`${API_URL}/api/sharing/request`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': currentApiKey
-                    },
-                    body: JSON.stringify({
-                        partner_business_id: partnerId,
-                        sharing_level: level,
-                        permissions: { share_conversion_data: shareConversions }
-                    })
-                });
-                const data = await res.json();
-                alert(data.message || 'Request sent!');
-                hideAddPartner();
-                loadPartners();
-            } catch (err) {
-                alert('Failed to send request');
-            }
-        }
-
-        async function acceptPartner(agreementId) {
-            try {
-                await fetch(`${API_URL}/api/sharing/accept/${agreementId}`, {
-                    method: 'POST',
-                    headers: { 'X-API-Key': currentApiKey }
-                });
-                alert('Partnership activated!');
-                loadPartners();
-            } catch (err) {
-                alert('Failed to accept');
-            }
-        }
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 </body>
 </html>

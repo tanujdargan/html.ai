@@ -10,6 +10,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- AI Optimization Tag -->
+    <script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>
+
+    <!-- Reward Button Component -->
+    <script type="module" src="./sdk/src/RewardButton.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -354,16 +360,20 @@
 
     <!-- Hero Section -->
     <!-- AI-Optimized Hero Section -->
-    <ai-optimize component-id="hero-shoes">
-        <section class="hero">
-            <div class="hero-content">
-                <div class="hero-badge">New Arrivals</div>
-                <h1 data-ai="headline">Step into Premium Comfort</h1>
-                <p data-ai="subheadline">Discover our curated collection of premium footwear with free shipping on orders over $50</p>
-                <button id="hero-cta" data-ai="cta">Shop Collection</button>
-            </div>
-        </section>
-    </ai-optimize>
+    <section class="hero">
+        <div class="hero-content" style="display: flex; gap: 40px; align-items: center;">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop" alt="Premium Running Shoes" style="width: 320px; height: 320px; object-fit: cover; border-radius: 16px;">
+
+            <ai-opt experiment="hero-shoes">
+                <div class="hero-info">
+                    <div class="hero-badge">New Arrivals</div>
+                    <h1>Step into Premium Comfort</h1>
+                    <p>Discover our curated collection of premium footwear with free shipping on orders over $50</p>
+                    <button id="hero-cta">Shop Collection</button>
+                </div>
+            </ai-opt>
+        </div>
+    </section>
 
     <!-- Products Grid -->
     <section class="products">
@@ -452,7 +462,6 @@
     </section>
 
     <!-- Debug Panel -->
-    <!-- Debug Panel -->
     <div class="debug-panel">
         <h4>html.ai Debug</h4>
         <div class="debug-item"><span class="debug-label">Business:</span> biz_shoes (Business A)</div>
@@ -464,8 +473,17 @@
         </div>
         <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
         <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
+        <div class="debug-item">
+            <span class="debug-label">Viewing Variant:</span>
+            <span id="debug-variant" style="font-weight: bold; color: #00ff00;">--</span>
+        </div>
         <div class="debug-item" id="cross-site-info" style="display:none; color: #27ae60;">
             <span class="debug-label">Cross-Site Data:</span> Linked to global profile
+        </div>
+        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #333;">
+            <reward-button variant="A" reward="9" id="reward-btn" style="width: 100%; padding: 8px; background: #008060; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: 600;">
+                Give Reward
+            </reward-button>
         </div>
         <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
             <a href="demo-business-b.html" style="color: #008060;">Visit Business B (Clothes)</a>

@@ -27,5 +27,40 @@ services:
     environment:
       MONGO_URL: mongodb://mongo:27017/adaptive_identity
 
+  analytics:
+    build:
+      context: ./aiBackend
+      dockerfile: Dockerfile.analytics
+    container_name: adaptive_analytics
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URL: mongodb://mongo:27017/
+
+  demo-businesses:
+    image: python:3.11-alpine
+    container_name: demo_businesses
+    restart: always
+    ports:
+      - "8083:8083"
+    volumes:
+      - .:/app:ro
+    working_dir: /app
+    command: python -m http.server 8083
+
+  dashboard:
+    image: python:3.11-alpine
+    container_name: adaptive_dashboard
+    restart: always
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./admin-dashboard.html:/app/index.html:ro
+    working_dir: /app
+    command: python -m http.server 8084
+
 volumes:
   mongo_data:
