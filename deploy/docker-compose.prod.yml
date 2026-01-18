@@ -1,5 +1,11 @@
 version: '3.8'
 
+# ===========================================
+# html.ai Backend Services
+# Website is on Vercel (htmlai.tech)
+# This deploys: api, demo, dashboard subdomains
+# ===========================================
+
 services:
   # ===========================================
   # Nginx Reverse Proxy with SSL
@@ -54,7 +60,7 @@ services:
       retries: 5
 
   # ===========================================
-  # Main API Engine
+  # Main API Engine (api.htmlai.tech)
   # ===========================================
   engine:
     build:
@@ -72,7 +78,7 @@ services:
       - htmlai-network
 
   # ===========================================
-  # Analytics API
+  # Analytics API (api.htmlai.tech/analytics)
   # ===========================================
   analytics:
     build:
@@ -85,18 +91,6 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-    networks:
-      - htmlai-network
-
-  # ===========================================
-  # Website (Next.js)
-  # ===========================================
-  website:
-    build:
-      context: ../website
-      dockerfile: Dockerfile
-    container_name: htmlai-website
-    restart: unless-stopped
     networks:
       - htmlai-network
 
