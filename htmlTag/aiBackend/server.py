@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
@@ -367,6 +367,79 @@ async def tag_ai(payload: HtmlPayload):
 @app.post("/rewardTag")
 async def reward_tag(payload: RewardPayload):
     return rewardTag(payload.user_id, payload.reward, payload.contextHtml, payload.variantAttributed)
+
+
+# ----------------------------------------
+# SDK Compatibility Endpoints
+# ----------------------------------------
+@app.post("/api/events/batch")
+async def batch_events(request: Request):
+    """
+    Accept batched events from SDK and log them
+    Compatible with htmlai-sdk.js event batching
+    """
+    try:
+        data = await request.json()
+        events = data.get('events', [])
+        user_id = data.get('user_id')
+        
+        # Log events for analytics (you can expand this to store in MongoDB)
+        for event in events:
+            print(f"[Event] User: {user_id}, Type: {event.get('type')}, Component: {event.get('component_id')}")
+        
+        return {
+            "status": "success",
+            "events_received": len(events),
+            "user_id": user_id
+        }
+    except Exception as e:
+        print(f"Error processing batch events: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/reward")
+async def reward_api(request: Request):
+    """
+    Reward endpoint compatible with SDK
+    """
+    try:
+        data = await request.json()
+        user_id = data.get('user_id')
+        reward = data.get('reward', 1.0)
+        
+        # For now, just log it
+        print(f"[Reward] User: {user_id}, Reward: {reward}")
+        
+        return {
+            "status": "success",
+            "user_id": user_id,
+            "reward": reward
+        }
+    except Exception as e:
+        print(f"Error processing reward: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/sync/link")
+async def sync_link(request: Request):
+    """
+    Cross-site identity linking
+    """
+    try:
+        data = await request.json()
+        global_uid = request.headers.get('X-Global-UID')
+        user_id = data.get('user_id')
+        
+        print(f"[Sync] Linking user {user_id} to global {global_uid}")
+        
+        return {
+            "status": "success",
+            "global_uid": global_uid,
+            "user_id": user_id
+        }
+    except Exception as e:
+        print(f"Error syncing identity: {e}")
+        return {"status": "error", "message": str(e)}
 
 
 # ----------------------------------------
