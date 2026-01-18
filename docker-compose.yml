@@ -116,6 +116,20 @@ services:
     networks:
       - htmlai-network
 
+  # ===========================================
+  # Marketing Site - Next.js Landing Page
+  # ===========================================
+  marketing:
+    build:
+      context: ./marketing-site
+      dockerfile: Dockerfile
+    container_name: htmlai-marketing
+    restart: unless-stopped
+    ports:
+      - "4000:3000"
+    networks:
+      - htmlai-network
+
 networks:
   htmlai-network:
     driver: bridge
