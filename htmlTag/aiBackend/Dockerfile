@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 5. Run the server
-CMD ["uvicorn", "server:app", "--reload", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "3000"]
