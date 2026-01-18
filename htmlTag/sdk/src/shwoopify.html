@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>AI Shopify-Style Store</title>
+
+    <!-- AI Optimization SDK -->
+    <script type="module" src="./AiOptimizeElement_v2.js"></script>
+    <script type="module" src="./RewardButton.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background: #f6f6f7;
+            color: #202223;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        header nav a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #5c5f62;
+            font-size: 14px;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        }
+
+        .product-image img {
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .product-info h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .price {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .product-info p {
+            color: #6d7175;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            background: #008060;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .trust {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #6d7175;
+        }
+
+        footer {
+            margin-top: 60px;
+            background: white;
+            border-top: 1px solid #e1e3e5;
+            padding: 32px 40px;
+            text-align: center;
+            font-size: 14px;
+            color: #6d7175;
+        }
+
+        reward-button {
+            display: inline-block;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Shoopify</div>
+    <nav>
+        <a href="#">Catalog</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+</header>
+
+<main>
+
+    <!-- COMPONENT 1: PRODUCT HERO -->
+    <ai-opt experiment="product-hero" component-id="hero">
+        <section class="product-grid">
+            <div class="product-image">
+                <img src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?q=80&w=900"
+                     alt="Running Shoes">
+            </div>
+
+            <div class="product-info">
+                <h1>Comfort Runner</h1>
+                <div class="price">$129.00</div>
+                <p>
+                    Lightweight running shoes built for all-day comfort.
+                    Designed for city life, workouts, and everything in between.
+                </p>
+                <button class="btn-primary">Add to cart</button>
+
+                <div class="trust">
+                    ✔ Free shipping • ✔ 30-day returns • ✔ Secure checkout
+                </div>
+            </div>
+        </section>
+    </ai-opt>
+
+    <!-- COMPONENT 2: PROMO MESSAGE -->
+    <ai-opt experiment="promo-message" component-id="promo">
+        <div style="margin-top: 32px; text-align: center; font-size: 16px;">
+            🎁 Buy 2 pairs and get 10% off your order
+        </div>
+    </ai-opt>
+
+    <!-- SHARED REWARD -->
+    <reward-button
+        variant="A"
+        reward="50"
+        component-ids='["hero","promo"]'>
+        👍 This page feels good
+    </reward-button>
+
+</main>
+
+<footer>
+    © 2026 Shoopify • Powered by html.ai
+</footer>
+
+</body>
+</html>
