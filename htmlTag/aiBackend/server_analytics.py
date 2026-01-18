@@ -87,19 +87,22 @@ async def get_all_variants():
         variants_data = []
         for user in users:
             user_id = user.get("user_id", "unknown")
-            variants = user.get("variants", {})
+            components = user.get("components", {})
 
-            for variant_letter in ["A", "B"]:
-                variant = variants.get(variant_letter, {})
-                if variant.get("current_html"):
-                    variants_data.append({
-                        "user_id": user_id,
-                        "variant": variant_letter,
-                        "html": variant.get("current_html", ""),
-                        "score": round(variant.get("current_score", 0), 2),
-                        "trials": variant.get("number_of_trials", 0),
-                        "history_count": len(variant.get("history", []))
-                    })
+            # Loop through each component_id
+            for component_id, component_data in components.items():
+                for variant_letter in ["A", "B"]:
+                    variant = component_data.get(variant_letter, {})
+                    if variant.get("current_html"):
+                        variants_data.append({
+                            "user_id": user_id,
+                            "component_id": component_id,
+                            "variant": variant_letter,
+                            "html": variant.get("current_html", ""),
+                            "score": round(variant.get("current_score", 0), 2),
+                            "trials": variant.get("number_of_trials", 0),
+                            "history_count": len(variant.get("history", []))
+                        })
 
         return {
             "status": "ok",
@@ -123,27 +126,29 @@ async def get_user_variants(user_id: str):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        variants = user.get("variants", {})
+        components = user.get("components", {})
 
         result = {
             "user_id": user_id,
-            "variants": {}
+            "components": {}
         }
 
-        for variant_letter in ["A", "B"]:
-            variant = variants.get(variant_letter, {})
-            result["variants"][variant_letter] = {
-                "current_html": variant.get("current_html", ""),
-                "current_score": round(variant.get("current_score", 0), 2),
-                "number_of_trials": variant.get("number_of_trials", 0),
-                "history": variant.get("history", [])
+        # Loop through each component
+        for component_id, component_data in components.items():
+            result["components"][component_id] = {
+                "A": {
+                    "current_html": component_data.get("A", {}).get("current_html", ""),
+                    "current_score": round(component_data.get("A", {}).get("current_score", 0), 2),
+                    "number_of_trials": component_data.get("A", {}).get("number_of_trials", 0),
+                    "history": component_data.get("A", {}).get("history", [])
+                },
+                "B": {
+                    "current_html": component_data.get("B", {}).get("current_html", ""),
+                    "current_score": round(component_data.get("B", {}).get("current_score", 0), 2),
+                    "number_of_trials": component_data.get("B", {}).get("number_of_trials", 0),
+                    "history": component_data.get("B", {}).get("history", [])
+                }
             }
-
-        # Determine winner
-        a_score = result["variants"]["A"]["current_score"]
-        b_score = result["variants"]["B"]["current_score"]
-        result["current_winner"] = "A" if a_score >= b_score else "B"
-        result["score_difference"] = round(abs(a_score - b_score), 2)
 
         return result
     except HTTPException:
@@ -166,29 +171,34 @@ async def get_stats_overview():
         b_wins = 0
         total_a_score = 0
         total_b_score = 0
+        total_components = 0
 
         for user in users:
-            variants = user.get("variants", {})
+            components = user.get("components", {})
 
-            a_variant = variants.get("A", {})
-            b_variant = variants.get("B", {})
+            # Loop through each component
+            for component_id, component_data in components.items():
+                total_components += 1
+                
+                a_variant = component_data.get("A", {})
+                b_variant = component_data.get("B", {})
 
-            a_score = a_variant.get("current_score", 0)
-            b_score = b_variant.get("current_score", 0)
+                a_score = a_variant.get("current_score", 0)
+                b_score = b_variant.get("current_score", 0)
 
-            total_a_score += a_score
-            total_b_score += b_score
+                total_a_score += a_score
+                total_b_score += b_score
 
-            total_trials += a_variant.get("number_of_trials", 0)
-            total_trials += b_variant.get("number_of_trials", 0)
+                total_trials += a_variant.get("number_of_trials", 0)
+                total_trials += b_variant.get("number_of_trials", 0)
 
-            if a_score > b_score:
-                a_wins += 1
-            elif b_score > a_score:
-                b_wins += 1
+                if a_score > b_score:
+                    a_wins += 1
+                elif b_score > a_score:
+                    b_wins += 1
 
-        avg_a_score = round(total_a_score / total_users, 2) if total_users > 0 else 0
-        avg_b_score = round(total_b_score / total_users, 2) if total_users > 0 else 0
+        avg_a_score = round(total_a_score / total_components, 2) if total_components > 0 else 0
+        avg_b_score = round(total_b_score / total_components, 2) if total_components > 0 else 0
 
         return {
             "total_users": total_users,
@@ -207,10 +217,10 @@ async def get_stats_overview():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/variants/history/{user_id}/{variant}")
-async def get_variant_history(user_id: str, variant: str):
+@app.get("/api/variants/history/{user_id}/{component_id}/{variant}")
+async def get_variant_history(user_id: str, component_id: str, variant: str):
     """
-    Get the full history of a specific variant for a user.
+    Get the full history of a specific variant for a user's component.
     Shows how the HTML evolved over time.
     """
     variant = variant.upper()
@@ -223,10 +233,13 @@ async def get_variant_history(user_id: str, variant: str):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        variant_data = user.get("variants", {}).get(variant, {})
+        components = user.get("components", {})
+        component_data = components.get(component_id, {})
+        variant_data = component_data.get(variant, {})
 
         return {
             "user_id": user_id,
+            "component_id": component_id,
             "variant": variant,
             "current_html": variant_data.get("current_html", ""),
             "current_score": variant_data.get("current_score", 0),
