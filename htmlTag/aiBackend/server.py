@@ -212,6 +212,162 @@ async def reward_tag(payload: RewardPayload):
 
 
 # ----------------------------------------
+# Dashboard API Endpoints
+# ----------------------------------------
+@app.get("/")
+def root():
+    """Health check"""
+    return {
+        "status": "running",
+        "service": "html.ai - A/B Testing Engine",
+        "version": "1.0.0",
+        "mongodb": "connected" if client else "disconnected"
+    }
+
+
+@app.get("/api/users/all")
+async def get_all_users():
+    """
+    Get all users with their session data for dashboard
+    """
+    try:
+        users = list(users_collection.find({}))
+        
+        # Get events and rewards (if collections exist)
+        events = list(mongodb["events"].find({})) if "events" in mongodb.list_collection_names() else []
+        rewards = list(mongodb["rewards"].find({})) if "rewards" in mongodb.list_collection_names() else []
+        
+        # Convert MongoDB _id to string
+        for user in users:
+            user["_id"] = str(user["_id"])
+        for event in events:
+            event["_id"] = str(event["_id"])
+        for reward in rewards:
+            reward["_id"] = str(reward["_id"])
+        
+        return {
+            "users": users,
+            "events": events,
+            "rewards": rewards,
+            "total_users": len(users),
+            "total_events": len(events),
+            "total_rewards": len(rewards)
+        }
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return {
+            "users": [],
+            "events": [],
+            "rewards": [],
+            "total_users": 0,
+            "total_events": 0,
+            "total_rewards": 0,
+            "error": str(e)
+        }
+
+
+@app.get("/api/user/{user_id}/journey")
+async def get_user_journey(user_id: str):
+    """
+    Get detailed journey for a specific user
+    Shows variants A/B with history and scores
+    """
+    try:
+        user = users_collection.find_one({"user_id": user_id})
+        
+        if not user:
+            return {
+                "error": "User not found",
+                "user_id": user_id
+            }
+        
+        # Convert _id
+        user["_id"] = str(user["_id"])
+        
+        # Extract variants
+        variants = user.get("variants", {})
+        variant_a = variants.get("A", {})
+        variant_b = variants.get("B", {})
+        
+        # Build events from variant history
+        events = []
+        for variant_name in ["A", "B"]:
+            variant = variants.get(variant_name, {})
+            history = variant.get("history", [])
+            for item in history:
+                events.append({
+                    "event_name": f"variant_{variant_name}_updated",
+                    "variant": variant_name,
+                    "html": item.get("html", ""),
+                    "score": item.get("score", 0),
+                    "timestamp": item.get("timestamp", "")
+                })
+        
+        # Sort events by timestamp
+        events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        
+        return {
+            "user_id": user_id,
+            "user": user,
+            "variants": variants,
+            "variant_a": variant_a,
+            "variant_b": variant_b,
+            "events": events,
+            "current_winner": "A" if variant_a.get("current_score", 0) > variant_b.get("current_score", 0) else "B"
+        }
+    except Exception as e:
+        print(f"Error fetching user journey: {e}")
+        return {
+            "error": str(e),
+            "user_id": user_id
+        }
+
+
+@app.get("/api/analytics/dashboard")
+async def get_dashboard_analytics():
+    """
+    Get aggregated analytics for the dashboard
+    """
+    try:
+        users = list(users_collection.find({}))
+        
+        # Count active sessions
+        active_sessions = sum(1 for u in users if u.get("last_session"))
+        
+        # Get variant statistics
+        variant_a_users = sum(1 for u in users if u.get("variants", {}).get("A"))
+        variant_b_users = sum(1 for u in users if u.get("variants", {}).get("B"))
+        
+        # Calculate average scores
+        a_scores = [u.get("variants", {}).get("A", {}).get("current_score", 0) for u in users if u.get("variants", {}).get("A")]
+        b_scores = [u.get("variants", {}).get("B", {}).get("current_score", 0) for u in users if u.get("variants", {}).get("B")]
+        
+        avg_a_score = sum(a_scores) / len(a_scores) if a_scores else 0
+        avg_b_score = sum(b_scores) / len(b_scores) if b_scores else 0
+        
+        return {
+            "total_users": len(users),
+            "active_sessions": active_sessions,
+            "variant_a": {
+                "users": variant_a_users,
+                "avg_score": round(avg_a_score, 2)
+            },
+            "variant_b": {
+                "users": variant_b_users,
+                "avg_score": round(avg_b_score, 2)
+            },
+            "winner": "A" if avg_a_score > avg_b_score else "B" if avg_b_score > avg_a_score else "Tie"
+        }
+    except Exception as e:
+        print(f"Error fetching analytics: {e}")
+        return {
+            "error": str(e),
+            "total_users": 0,
+            "active_sessions": 0
+        }
+
+
+# ----------------------------------------
 # Run (for local debugging only)
 # ----------------------------------------
 if __name__ == "__main__":
