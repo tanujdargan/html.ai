@@ -23,23 +23,11 @@ build/
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
-# Logs
-*.log
-logs/
+# Vercel
+.vercel
 
-# Database
-*.db
-*.sqlite
-
-# Node
-node_modules/
-npm-debug.log*
-
-# Claude Code (don't commit this to hackathon repo)
-.claude/
-venv/*
-# Python virtual environment
-venv/
-.venv/
-
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

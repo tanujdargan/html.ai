@@ -78,10 +78,12 @@ export default function DocsLayout({ children, title, description }: DocsLayoutP
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/10 blur-[120px]" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/5 blur-[100px]" />
+        {/* Gradient behind sidebar for translucent effect */}
+        <div className="absolute top-0 left-0 w-80 h-full bg-gradient-to-b from-primary/15 via-purple-500/10 to-emerald-500/10 blur-[80px]" />
       </div>
 
       {/* Header */}
-      <header className="fixed top-0 inset-x-0 z-50 glass border-b border-border">
+      <header className="fixed top-0 inset-x-0 z-50 bg-gradient-to-r from-white/10 via-white/5 to-white/10 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]">
         <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -121,7 +123,7 @@ export default function DocsLayout({ children, title, description }: DocsLayoutP
 
       <div className="flex pt-16">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 glass border-r border-border overflow-y-auto">
+        <aside className="hidden lg:block fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-2xl backdrop-saturate-150 border-r border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] overflow-y-auto">
           <nav className="p-6 space-y-2">
             {menuItems.map((section) => {
               const Icon = section.icon;
@@ -163,7 +165,7 @@ export default function DocsLayout({ children, title, description }: DocsLayoutP
 
         {/* Sidebar - Mobile */}
         <aside
-          className={`lg:hidden fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 glass border-r border-border overflow-y-auto transition-transform duration-300 ease-in-out ${
+          className={`lg:hidden fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-2xl backdrop-saturate-150 border-r border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] overflow-y-auto transition-transform duration-300 ease-in-out ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

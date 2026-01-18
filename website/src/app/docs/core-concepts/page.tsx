@@ -17,10 +17,12 @@ export default function CoreConceptsPage() {
 
         <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50 mb-6">
           <pre className="text-sm font-mono">
-            <code className="text-emerald-400">{`<ai-opt experiment="hero-section">
-  <h1>Welcome</h1>
-  <p>Find the best products</p>
-  <button>Shop Now</button>
+            <code className="text-emerald-400">{`<ai-opt experiment="hero-block" component-id="1">
+  <div class="hero">
+    <h2>Comfort Runner Shoes</h2>
+    <p>Ultra-light running shoes designed for all-day comfort.</p>
+    <button>Shop Now</button>
+  </div>
 </ai-opt>`}</code>
           </pre>
         </div>
@@ -28,11 +30,45 @@ export default function CoreConceptsPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="glass rounded-lg p-4 border border-border/50">
             <code className="text-primary text-sm">experiment</code>
-            <p className="text-xs text-muted-foreground mt-1">Unique identifier for the experiment/component</p>
+            <p className="text-xs text-muted-foreground mt-1">Unique name for the experiment</p>
           </div>
           <div className="glass rounded-lg p-4 border border-border/50">
-            <code className="text-primary text-sm">&lt;ai-opt&gt;</code>
-            <p className="text-xs text-muted-foreground mt-1">Custom element that wraps content for AI optimization</p>
+            <code className="text-primary text-sm">component-id</code>
+            <p className="text-xs text-muted-foreground mt-1">ID used to link with reward-button</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Reward Button */}
+      <section id="reward-button" className="mb-16 scroll-mt-24">
+        <h2 className="text-2xl font-semibold mb-6">Reward Button</h2>
+        <p className="text-muted-foreground mb-6 leading-relaxed">
+          Use <code className="bg-black/30 px-1.5 py-0.5 rounded text-xs font-mono text-primary">&lt;reward-button&gt;</code> to send feedback signals when users convert:
+        </p>
+
+        <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50 mb-6">
+          <pre className="text-sm font-mono">
+            <code className="text-emerald-400">{`<reward-button
+  variant="A"
+  reward="100"
+  component-ids='["1", "2"]'>
+  Give Reward
+</reward-button>`}</code>
+          </pre>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="glass rounded-lg p-4 border border-border/50">
+            <code className="text-primary text-sm">variant</code>
+            <p className="text-xs text-muted-foreground mt-1">Which variant to attribute reward to (A, B, etc.)</p>
+          </div>
+          <div className="glass rounded-lg p-4 border border-border/50">
+            <code className="text-primary text-sm">reward</code>
+            <p className="text-xs text-muted-foreground mt-1">Point value for this conversion (default: 1)</p>
+          </div>
+          <div className="glass rounded-lg p-4 border border-border/50">
+            <code className="text-primary text-sm">component-ids</code>
+            <p className="text-xs text-muted-foreground mt-1">JSON array of component IDs to reward</p>
           </div>
         </div>
       </section>

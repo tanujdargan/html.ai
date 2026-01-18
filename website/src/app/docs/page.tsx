@@ -46,14 +46,25 @@ export default function DocsPage() {
         
         <div className="glass rounded-xl p-5 overflow-x-auto border border-border/50 mb-4">
           <pre className="text-sm font-mono">
-            <code className="text-emerald-400">{`<!-- 1. Add SDK -->
-<script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>
+            <code className="text-emerald-400">{`# 1. Clone and start backend
+git clone https://github.com/tanujdargan/html.ai.git
+cd html.ai
+echo "GEMINI_API_KEY=your_gemini_key" > .env
+docker-compose up -d
 
-<!-- 2. Wrap components -->
-<ai-opt experiment="hero">
+# 2. Add SDK to your HTML
+<script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>
+<script type="module" src="./sdk/src/RewardButton.js"></script>
+
+# 3. Wrap components & add reward button
+<ai-opt experiment="hero" component-id="1">
   <h1>Welcome</h1>
   <button>Shop Now</button>
-</ai-opt>`}</code>
+</ai-opt>
+
+<reward-button variant="A" reward="100" component-ids='["1"]'>
+  Give Reward
+</reward-button>`}</code>
           </pre>
         </div>
 
