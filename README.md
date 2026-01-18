@@ -172,28 +172,3 @@ Everything backend:
 ### **htmlTag/Docker-compose.yml**
 Orchestrates backend + MongoDB.
 
----
-
-# 🎯 What’s Working Right Now
-
-✔️ Custom HTML tag  
-✔️ DOM extraction  
-✔️ POST request to backend  
-✔️ Backend logs received HTML  
-✔️ Docker works  
-✔️ MongoDB up and running  
-✔️ Demo page functional  
-
----
-
-# 🧭 Next Steps (Hackathon Roadmap)
-
-1. Add `/variant` endpoint  
-2. Store each experiment instance in Mongo  
-3. Add variant scoring + event logging  
-4. Add AI generation  
-5. Build dashboard for experiment visibility  
-
----
-
-# 🎉 You’re Ready to Build
