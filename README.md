@@ -12,41 +12,38 @@ Main files:
 
 # example MongoDB structure (real output)
 
-html_ai> db.users.find().pretty()
-[
-  {
-    _id: ObjectId("696cf416f830279cefe924c6"),
-    user_id: "guest",
-    components: {
-      hero: {
-        A: {
-          current_html: "<div class='section hero'>...</div>",
-          current_score: 3,
-          number_of_trials: 10,
-          history: []
-        },
-        B: {
-          current_html: "<div class='section hero'>... improved ...</div>",
-          current_score: 3,
-          number_of_trials: 10,
-          history: []
-        }
+{
+  _id: ObjectId("696cf416f830279cefe924c6"),
+  user_id: "guest",
+  components: {
+    hero: {
+      A: {
+        current_html: "<div class='section hero'>...</div>",
+        current_score: 3,
+        number_of_trials: 10,
+        history: []
       },
-
-      footer: {
-        A: {
-          current_html: "<div class='section footer'>...</div>",
-          current_score: 3,
-          number_of_trials: 10,
-          history: []
-        },
-        B: {
-          current_html: "<div class='section footer'>... improved ...</div>",
-          current_score: 3,
-          number_of_trials: 10,
-          history: []
-        }
+      B: {
+        current_html: "<div class='section hero'>... improved ...</div>",
+        current_score: 3,
+        number_of_trials: 10,
+        history: []
+      }
+    },
+    footer: {
+      A: {
+        current_html: "<div class='section footer'>...</div>",
+        current_score: 3,
+        number_of_trials: 10,
+        history: []
+      },
+      B: {
+        current_html: "<div class='section footer'>... improved ...</div>",
+        current_score: 3,
+        number_of_trials: 10,
+        history: []
       }
     }
+
   }
-]
+}
