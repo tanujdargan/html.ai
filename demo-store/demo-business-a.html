@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShoeMax - Premium Footwear (Business A)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+        header {
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .business-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; }
+        .cta-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cta-btn:hover { transform: scale(1.05); }
+        .products {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .product-card:hover { transform: translateY(-4px); }
+        .product-img {
+            width: 100%;
+            height: 200px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .product-info { padding: 1.5rem; }
+        .product-info h3 { margin-bottom: 0.5rem; }
+        .product-info .price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-width: 350px;
+            z-index: 1000;
+        }
+        .debug-panel h4 { color: #4CAF50; margin-bottom: 0.5rem; }
+        .debug-item { margin: 0.25rem 0; }
+        .debug-label { color: #888; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">ShoeMax</div>
+        <span class="business-badge">Business A - biz_shoes</span>
+    </header>
+
+    <!-- AI-Optimized Hero Section -->
+    <ai-optimize component-id="hero-shoes">
+        <div class="hero">
+            <h1 data-ai="headline">Premium Footwear Collection</h1>
+            <p data-ai="subheadline">Step into comfort and style</p>
+            <button class="cta-btn" data-ai="cta">Shop Now</button>
+        </div>
+    </ai-optimize>
+
+    <div class="products">
+        <div class="product-card" data-track-hover data-component-id="product-1">
+            <div class="product-img">Running Shoes</div>
+            <div class="product-info">
+                <h3>Air Max Pro</h3>
+                <p class="price">$149.99</p>
+            </div>
+        </div>
+        <div class="product-card" data-track-hover data-component-id="product-2">
+            <div class="product-img">Casual Sneakers</div>
+            <div class="product-info">
+                <h3>Urban Classic</h3>
+                <p class="price">$89.99</p>
+            </div>
+        </div>
+        <div class="product-card" data-track-hover data-component-id="product-3">
+            <div class="product-img">Hiking Boots</div>
+            <div class="product-info">
+                <h3>Trail Master</h3>
+                <p class="price">$199.99</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h4>html.ai Debug</h4>
+        <div class="debug-item"><span class="debug-label">Business:</span> biz_shoes (Business A)</div>
+        <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Global UID:</span> <span id="debug-guid">syncing...</span></div>
+        <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
+        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
+            <a href="demo-business-b.html" style="color: #4CAF50;">Visit Business B (Clothes)</a>
+        </div>
+    </div>
+
+    <!-- html.ai SDK -->
+    <script src="http://localhost:8080/htmlai-sdk.js"
+            data-api-key="pk_demo_shoes_123"
+            data-api-url="http://localhost:3000"
+            data-tracking-domain="http://localhost:3001"
+            data-debug>
+    </script>
+
+    <script>
+        // Update debug panel
+        let eventCount = 0;
+
+        // Wait for SDK to initialize
+        function initDebug() {
+            if (!window.HtmlAI || !window.HtmlAI.getUser) {
+                setTimeout(initDebug, 500);
+                return;
+            }
+
+            const user = window.HtmlAI.getUser();
+            document.getElementById('debug-uid').textContent = user.user_id || 'N/A';
+            document.getElementById('debug-session').textContent = user.session_id || 'N/A';
+
+            if (user.global_uid) {
+                document.getElementById('debug-guid').textContent = user.global_uid;
+            }
+
+            // Listen for cross-site sync
+            window.HtmlAI.onSync((guid) => {
+                document.getElementById('debug-guid').textContent = guid;
+            });
+        }
+
+        // Start checking for SDK
+        setTimeout(initDebug, 1000);
+
+        // Track clicks on products
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', () => {
+                eventCount++;
+                document.getElementById('debug-events').textContent = eventCount;
+                if (window.HtmlAI && window.HtmlAI.track) {
+                    window.HtmlAI.track('product_click', card.dataset.componentId, {
+                        product_name: card.querySelector('h3').textContent
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

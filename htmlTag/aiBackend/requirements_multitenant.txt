@@ -1,0 +1,22 @@
+# FastAPI Backend
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+python-dotenv==1.0.0
+
+# Database
+pymongo==4.6.1
+
+# Multi-Agent System
+langgraph>=0.0.20
+langchain>=0.1.0
+langchain-core>=0.1.8
+langchain-google-genai>=0.0.5
+google-generativeai>=0.3.2
+
+# Utilities
+python-dateutil==2.8.2
+
+# Security (for API key hashing)
+passlib==1.7.4
+python-jose==3.3.0
