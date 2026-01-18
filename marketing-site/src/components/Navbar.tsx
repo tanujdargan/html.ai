@@ -9,8 +9,7 @@ import { Menu, X } from "lucide-react";
 const navLinks = [
   { name: "Demo", href: "#demo" },
   { name: "Use Cases", href: "#use-cases" },
-  { name: "Dashboard", href: "http://localhost:8081/" },
-  { name: "Docs", href: "#docs" },
+  { name: "Docs", href: "/docs" },
 ];
 
 export default function Navbar() {
@@ -21,12 +20,12 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-6 inset-x-0 z-50 mx-auto w-full max-w-4xl px-4"
+      className="fixed top-6 inset-x-0 z-50 mx-auto w-fit px-4"
     >
-      <nav className="glass rounded-full px-6 py-3 flex items-center justify-between">
+      <nav className="glass rounded-full px-5 py-2.5 flex items-center justify-center gap-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-8 h-8 overflow-hidden rounded-lg">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="relative w-7 h-7 overflow-hidden rounded-md">
             <Image
               src="/html-ai-icon.png"
               alt="html.ai logo"
@@ -34,13 +33,16 @@ export default function Navbar() {
               className="object-contain"
             />
           </div>
-          <span className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
+          <span className="font-semibold text-base tracking-tight group-hover:text-primary transition-colors">
             html.ai
           </span>
         </Link>
 
+        {/* Divider */}
+        <div className="hidden md:block w-px h-5 bg-border" />
+
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-5">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -53,18 +55,10 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* CTA Button */}
-        <Link
-          href="#get-started"
-          className="hidden md:block px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-full hover:opacity-90 transition-opacity"
-        >
-          Get Started
-        </Link>
-
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-foreground"
+          className="md:hidden p-1.5 text-foreground"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -90,13 +84,6 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <Link
-              href="#get-started"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mt-2 px-4 py-3 bg-primary text-primary-foreground text-center font-medium rounded-full hover:opacity-90 transition-opacity"
-            >
-              Get Started
-            </Link>
           </div>
         </motion.div>
       )}

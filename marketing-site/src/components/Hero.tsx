@@ -76,7 +76,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <Link
-            href="#get-started"
+            href="/docs/getting-started"
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold text-lg rounded-full hover:opacity-90 transition-all glow hover:scale-105"
           >
             Get Started
