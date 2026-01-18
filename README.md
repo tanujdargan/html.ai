@@ -1,120 +1,199 @@
-# Adaptive Identity Engine
+# 🚀 html.ai — Quick Start Guide (Hackathon Edition)
 
-**Self-improving UI engine powered by behavioral analytics and multi-agent AI**
+This project lets developers wrap any part of their website in a **custom HTML tag** (`<ai-optimize>`) that automatically sends its inner HTML to an AI backend for analysis, variant generation, and personalization.
 
-## 🎯 Hackathon Sponsor Tracks
-
-- ✅ **Foresters Financial** - Multi-Agent Mind (4 specialized agents + LangGraph orchestration)
-- ✅ **Amplitude** - Self-Improving Products (behavioral data → AI insights → action loop)
-- ✅ **Shopify** - Hack Shopping with AI (optimize e-commerce conversions)
-
-## 🏗️ Architecture
-
-```
-User Actions on Shopify Store
-   ↓
-identity.js SDK (event capture)
-   ↓
-FastAPI Backend
-   ↓
-Multi-Agent System (LangGraph)
-   ├─ Analytics Agent (compute behavioral vector)
-   ├─ Identity Agent (interpret user state)
-   ├─ Decision Agent (select UI variant)
-   └─ Guardrail Agent (validate ethics/privacy)
-   ↓
-Variant Rendered + Events Logged
-   ↓
-Continuous Learning Loop
-```
-
-## 🚀 Quick Start
-
-### Backend (Python + LangGraph)
-```bash
-cd backend
-pip install -r requirements.txt
-python -m uvicorn main:app --reload
-```
-
-### Frontend SDK
-```html
-<script src="https://your-cdn.com/identity.js"></script>
-<div data-identity-component="hero" data-goal="conversion" data-variants="3">
-  Your content here
-</div>
-```
-
-### Demo Store
-```bash
-cd demo-store
-# Open index.html in browser
-```
-
-## 📊 Event Schema (Amplitude-Style)
-
-Events tracked:
-- `page_viewed`
-- `component_viewed`
-- `scroll_depth_reached`
-- `time_on_component`
-- `click`
-- `add_to_cart`
-- `conversion_completed`
-
-Each event includes:
-```json
-{
-  "event_name": "component_viewed",
-  "timestamp": "2026-01-17T12:00:00Z",
-  "session_id": "abc123",
-  "user_id": "user_456",
-  "properties": {
-    "component_id": "hero",
-    "variant_shown": "confident_v2"
-  }
-}
-```
-
-## 🤖 Multi-Agent System
-
-### Agent 1: Analytics Agent
-Transforms raw events → behavioral identity vector
-
-### Agent 2: Identity Interpretation Agent
-Interprets vector → semantic state (exploratory, confident, overwhelmed, etc.)
-
-### Agent 3: Decision Agent
-Selects optimal UI variant using contextual bandit algorithm
-
-### Agent 4: Guardrail Agent
-Validates all decisions for privacy/ethics compliance
-
-## 🛡️ Privacy & Ethics
-
-- Session-scoped identity (no persistent tracking)
-- No inference of protected characteristics
-- No price manipulation
-- Full decision audit logs
-- Only adapts pre-approved components
-
-## 👥 Team
-
-- [Your names here]
-
-## 📦 Tech Stack
-
-- **Backend**: Python, FastAPI, LangGraph, OpenAI
-- **Database**: Supabase (PostgreSQL + Realtime)
-- **Frontend SDK**: Vanilla JavaScript
-- **Demo**: Shopify Liquid theme
-- **Analytics**: Amplitude-compatible event schema
-
-## 🏆 Demo
-
-[Link to demo video]
-[Link to live Shopify store]
+This README explains:
+- How to run everything
+- Which ports matter
+- What each teammate should work on
 
 ---
 
-Built for UofTHacks 2026 🎓
+# 📂 Project Structure
+html.ai/
+│
+├── htmlTag/
+│   ├── sdk/
+│   │   ├── src/
+│   │   │   ├── AiOptimizeElement.js
+│   │   │   ├── index.js
+│   │   │   └── index.html
+│   │
+│   ├── aiBackend/
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── server.py
+│   │
+│   └── Docker-compose.yml
+│
+└── aiusage.txt
+
+---
+
+# 🔌 Ports Overview
+
+| Component | Port | Purpose |
+|----------|------|---------|
+| SDK Demo | 8080 | Frontend demo server |
+| Backend  | 3000 | FastAPI that receives HTML + returns variants |
+| MongoDB  | 27017 | Data store |
+
+---
+
+# 🐳 Running Backend
+
+Make sure Docker Desktop is running, then inside:
+
+```
+html.ai/htmlTag
+```
+
+run:
+
+```
+docker compose up --build
+```
+
+If successful, you should see:
+
+- **FastAPI backend** → running on `http://localhost:3000`
+- **MongoDB** → running on port `27017`
+
+To stop:
+
+```
+CTRL+C
+docker compose down
+```
+
+---
+
+# 🧪 Running the Frontend Demo (SDK Tester)
+
+Open a second terminal and run:
+
+```
+cd html.ai/htmlTag/sdk/src
+python3 -m http.server 8080
+```
+
+Visit:
+
+```
+http://localhost:8080
+```
+
+You should see the demo page with two `<ai-optimize>` blocks.
+
+Every time the page loads, each block sends its HTML to the backend at:
+
+```
+POST http://localhost:3000/log-html
+```
+
+Check Docker logs to confirm HTML is being captured.
+
+---
+
+# 🧩 How the Custom Tag Works
+
+Developers wrap any part of their site:
+
+```html
+<ai-optimize experiment="hero-cta">
+    <button>Click Me</button>
+</ai-optimize>
+```
+
+Our SDK:
+
+1. Extracts the inner HTML  
+2. Sends it to the backend  
+3. Awaits the returned variant  
+4. Replaces the DOM dynamically
+
+Example payload sent:
+
+```json
+{
+  "experiment": "hero-cta",
+  "html": "<button>Click Me</button>"
+}
+```
+
+Backend replies with:
+
+```json
+{
+  "html": "<button style='background:red'>Buy Now</button>"
+}
+```
+
+DOM updates automatically.
+
+---
+
+# 🧠 Future AI Layer (Team Task #3)
+
+Later, instead of returning static HTML, the backend will:
+
+- Store variants in MongoDB  
+- Use LLM agents to produce personalized variants  
+- Track performance metrics  
+- Evolve each component over time  
+
+---
+
+# 👥 Recommended Team Breakdown (4 Teammates)
+
+| Person | Responsibilities |
+|--------|------------------|
+| **1: SDK Engineer** | Custom tag, DOM rendering, CDN packaging |
+| **2: Backend Engineer** | FastAPI endpoints, Docker, routing |
+| **3: AI/ML Engineer** | Variant generation, LLM logic, scoring |
+| **4: Infra/Data Engineer** | Mongo models, data logging, analytics |
+
+---
+
+# 🧱 File Responsibilities
+
+### **htmlTag/sdk/**
+Everything frontend:
+- `AiOptimizeElement.js` → defines `<ai-optimize>`
+- `index.js` → auto-registers custom element
+- `index.html` → demo
+
+### **htmlTag/aiBackend/**
+Everything backend:
+- `server.py` → FastAPI logic
+- `requirements.txt` → dependencies
+- `Dockerfile` → container image
+
+### **htmlTag/Docker-compose.yml**
+Orchestrates backend + MongoDB.
+
+---
+
+# 🎯 What’s Working Right Now
+
+✔️ Custom HTML tag  
+✔️ DOM extraction  
+✔️ POST request to backend  
+✔️ Backend logs received HTML  
+✔️ Docker works  
+✔️ MongoDB up and running  
+✔️ Demo page functional  
+
+---
+
+# 🧭 Next Steps (Hackathon Roadmap)
+
+1. Add `/variant` endpoint  
+2. Store each experiment instance in Mongo  
+3. Add variant scoring + event logging  
+4. Add AI generation  
+5. Build dashboard for experiment visibility  
+
+---
+
+# 🎉 You’re Ready to Build
