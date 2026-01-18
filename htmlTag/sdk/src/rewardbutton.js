@@ -3,6 +3,15 @@ class RewardButton extends HTMLElement {
         super();
         this.variant = this.getAttribute("variant") || null;   // A or B
         this.reward = Number(this.getAttribute("reward") || 1); // +1 default
+        const rawIds = this.getAttribute("component-ids") || this.getAttribute("component-id") || "default";
+        let componentIds = [];
+        try {
+            const parsed = JSON.parse(rawIds);
+            componentIds = Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            componentIds = [rawIds];
+        }
+        this.componentIds = componentIds;
     }
 
     connectedCallback() {
@@ -19,7 +28,8 @@ class RewardButton extends HTMLElement {
             user_id: ids.user_id,
             variantAttributed: this.variant,
             reward: this.reward,
-            contextHtml: contextHtml
+            contextHtml: contextHtml,
+            component_ids: this.componentIds
         };
 
         console.log("🎯 Sending REWARD payload → /rewardTag:", payload);

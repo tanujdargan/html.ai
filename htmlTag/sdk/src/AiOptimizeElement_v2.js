@@ -4,6 +4,7 @@ export class AiOpt extends HTMLElement {
         super();
         this.originalHtml = this.innerHTML;
         this.optimized = false;
+        this.componentId = this.getAttribute("component-id") || "default";
     }
 
     connectedCallback() {
@@ -18,6 +19,7 @@ export class AiOpt extends HTMLElement {
 
         const payload = {
             user_id: ids.user_id,
+            component_id: this.componentId,
             changingHtml: this.originalHtml,
             contextHtml: contextHtml,
 

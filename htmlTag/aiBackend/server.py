@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from datetime import datetime
 
-
+from fastapi import BackgroundTasks
 
 
 RERENDER_SCORE = 1
@@ -43,6 +43,7 @@ class HtmlPayload(BaseModel):
     user_id: str
     changingHtml: str
     contextHtml: str
+    component_id: str | None = None   # NEW FIELD
 
 
 class RewardPayload(BaseModel):
@@ -50,12 +51,13 @@ class RewardPayload(BaseModel):
     reward: float
     contextHtml: str
     variantAttributed: str
+    component_ids: list[str] = []   # ✅ ARRAY NOW
 
 
 # ----------------------------------------
 # Logic: aiTag
 # ----------------------------------------
-def aiTag(user_id: str, changingHtml: str, contextHtml: str):
+def aiTag(user_id: str, changingHtml: str, contextHtml: str, component_id: str):
     """
     1. Ensure user exists
     2. Store HTML snapshot
@@ -65,32 +67,34 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
 
     if not does_user_exists(user_id):
 
-
         users_collection.insert_one({
             "user_id": user_id,
-            "variants": {
-                "A": {
-                    "current_html": changingHtml,
-                    "current_score": 3,
-                    "number_of_trials": 10,
-                    "history": []
-                },
-
-                "B": {
-                    "current_html": changingHtml,
-                    "current_score": 3,
-                    "number_of_trials": 10,
-                    "history": []
+            "components": {
+                component_id: {
+                    "A": {
+                        "current_html": changingHtml,
+                        "current_score": 3,
+                        "number_of_trials": 10,
+                        "history": []
+                    },
+                    "B": {
+                        "current_html": changingHtml,
+                        "current_score": 3,
+                        "number_of_trials": 10,
+                        "history": []
+                    }
                 }
             }
         })
-        # 2. Now that user exists → generate variant B using RAG
-        new_b_html = AIRags(user_id, contextHtml, "B", "A")
 
-        # 3. Save the newly generated B HTML back to MongoDB
+
+        # 2. Now that user exists → generate variant B using RAG
+        new_b_html = AIRags(user_id, contextHtml, "B", "A", component_id)
+
+        # 3. Save the newly generated B HTML back to MongoDB (WITH COMPONENT SUPPORT)
         users_collection.update_one(
             {"user_id": user_id},
-            {"$set": {"variants.B.current_html": new_b_html}}
+            {"$set": {f"components.{component_id}.B.current_html": new_b_html}}
         )
 
 
@@ -101,24 +105,69 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
             "variant": "A"
         }
 
+    user = mongodb["users"].find_one({"user_id": user_id})
+    component = user["components"].get(component_id)
 
-    # TODO: ensure user exists + store HTML (you will add this later)
-    boolChoice:bool = bool( random.randint(0,1))
+    # NEW: If user exists but this component doesn't → initialize it
+    if not component:
+        users_collection.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    f"components.{component_id}": {
+                        "A": {
+                            "current_html": changingHtml,
+                            "current_score": 3,
+                            "number_of_trials": 10,
+                            "history": []
+                        },
+                        "B": {
+                            "current_html": changingHtml,
+                            "current_score": 3,
+                            "number_of_trials": 10,
+                            "history": []
+                        }
+                    }
+                }
+            }
+        )
 
-    if boolChoice:
-        BHtml = mongodb["users"].find_one({"user_id": user_id})["variants"]["A"]["current_html"]
+        # Generate B for this new component
+        new_b_html = AIRags(user_id, contextHtml, "B", "A", component_id)
+
+        users_collection.update_one(
+            {"user_id": user_id},
+            {"$set": {f"components.{component_id}.B.current_html": new_b_html}}
+        )
 
         return {
-            "status": "ok",
-            "changingHtml": BHtml,
+            "status": "ok:new-component",
+            "changingHtml": changingHtml,
             "variant": "A"
         }
 
-    else:
-        AHtml = mongodb["users"].find_one({"user_id": user_id})["variants"]["B"]["current_html"]
+    # TODO: ensure user exists + store HTML (you will add this later)
+    # Randomly choose A or B
+    boolChoice: bool = bool(random.randint(0, 1))
+
+    user = mongodb["users"].find_one({"user_id": user_id})
+    component = user["components"].get(component_id)
+
+    if not component:
+        return {"status": "error", "msg": f"Component '{component_id}' not found"}
+
+    if boolChoice:
+        AHtml = component["A"]["current_html"]
         return {
             "status": "ok",
             "changingHtml": AHtml,
+            "variant": "A"
+        }
+    else:
+        BHtml = component["B"]["current_html"]
+        return {
+            "status": "ok",
+            "changingHtml": BHtml,
             "variant": "B"
         }
 
@@ -141,31 +190,33 @@ def does_user_exists(user_id: str) -> bool:
 # ----------------------------------------
 # Logic: rewardTag
 # ----------------------------------------
-def rewardTag(user_id: str, reward: float, contextHtml: str, variantAttributed: str):
+def rewardTag(user_id: str, reward: float, contextHtml: str, variantAttributed: str, component_id: str):
     """
     Store a reward value mapped to the given user.
     """
-    ReRenderCheck(user_id, contextHtml)
-    implementScore(user_id, variantAttributed, reward)
-
-
-    return {
-        "status": "reward_logged",
-        "user_id": user_id,
-        "reward": reward
-    }
+    ReRenderCheck(user_id, contextHtml,component_id)
+    implementScore(user_id, variantAttributed, reward, component_id)
 
 
 
-def implementScore(user_id: str, variant: str, reward: float):
+def implementScore(user_id: str, variant: str, reward: float, component_id: str):
     variant = variant.upper()
 
-    # Get the current user entry
+    # Fetch user
     user = mongodb["users"].find_one({"user_id": user_id})
     if not user:
         return "User not found"
 
-    variant_data = user["variants"][variant]
+    # Ensure component exists
+    component = user.get("components", {}).get(component_id)
+    if not component:
+        return f"Component '{component_id}' not found"
+
+    # Ensure variant exists
+    if variant not in component:
+        return f"Variant '{variant}' not found in component '{component_id}'"
+
+    variant_data = component[variant]
 
     old_score = variant_data["current_score"]
     old_trials = variant_data["number_of_trials"]
@@ -174,125 +225,169 @@ def implementScore(user_id: str, variant: str, reward: float):
     new_trials = old_trials + 1
     new_score = (old_score * old_trials + reward) / new_trials
 
-    # Update MongoDB
+    # Update MongoDB *inside that specific component path*
     mongodb["users"].update_one(
         {"user_id": user_id},
         {
             "$set": {
-                f"variants.{variant}.current_score": new_score,
-                f"variants.{variant}.number_of_trials": new_trials
+                f"components.{component_id}.{variant}.current_score": new_score,
+                f"components.{component_id}.{variant}.number_of_trials": new_trials
             }
         }
     )
 
+    print(f"⭐ Updated score for user {user_id} → component {component_id} → variant {variant}: {new_score:.3f}")
 
 
-def ReRenderCheck(user_id: str, contextHtml: str):
+def ReRenderCheck(user_id: str, contextHtml: str, component_id: str):
 
     user = mongodb["users"].find_one({"user_id": user_id})
     if not user:
         return False
 
-    AScore = user["variants"]["A"]["current_score"]
-    BScore = user["variants"]["B"]["current_score"]
-    AHtml = user["variants"]["A"]["current_html"]
-    BHtml = user["variants"]["B"]["current_html"]
+    component = user.get("components", {}).get(component_id)
+    if not component:
+        print(f"⚠️ Component '{component_id}' not found for rerender check.")
+        return False
+
+    # Extract scores + html inside THIS component
+    AScore = component["A"]["current_score"]
+    BScore = component["B"]["current_score"]
+    AHtml = component["A"]["current_html"]
+    BHtml = component["B"]["current_html"]
 
     # If A is outperforming B by threshold → regenerate B
     if AScore >= BScore + RERENDER_SCORE:
-        reRender(user_id, "B", "A", contextHtml=contextHtml, oldHtml=BHtml)
+        reRender(
+            user_id,
+            "B",
+            "A",
+            contextHtml=contextHtml,
+            oldHtml=BHtml,
+            component_id=component_id   # ✅ PASSED NOW
+        )
 
     # If B is outperforming A by threshold → regenerate A
     if BScore >= AScore + RERENDER_SCORE:
-        reRender(user_id, "A", "B", contextHtml=contextHtml, oldHtml=AHtml)
+        reRender(
+            user_id,
+            "A",
+            "B",
+            contextHtml=contextHtml,
+            oldHtml=AHtml,
+            component_id=component_id   # ✅ PASSED NOW
+        )
 
     return True
 
 
 
-def reRender(user_id: str, VariantLetter: str, opposingVariantLetter:str, contextHtml: str, oldHtml: str):
+def reRender(
+    user_id: str,
+    VariantLetter: str,
+    opposingVariantLetter: str,
+    contextHtml: str,
+    oldHtml: str,
+    component_id: str
+):
     """
-    testLetter: "A" or "B"
-    oldHtml: the previous HTML before updating
+    Re-render a losing variant (A or B) inside a specific component.
     """
 
     user = mongodb["users"].find_one({"user_id": user_id})
     if not user:
         return "User not found"
 
-    # Make sure testLetter is uppercase
     VariantLetter = VariantLetter.upper()
+    opposingVariantLetter = opposingVariantLetter.upper()
 
-    # Safety check
     if VariantLetter not in ["A", "B"]:
-        raise Exception("testLetter must be 'A' or 'B'")
+        raise Exception("VariantLetter must be 'A' or 'B'")
 
-    # 1. Push oldHtml into the correct variant's history
-    # 1. Push oldHtml into the correct variant's history WITH timestamp + score
+    # Component block
+    component = user.get("components", {}).get(component_id)
+    if not component:
+        raise Exception( f"Component '{component_id}' not found")
+
+    # 1️⃣ Push OLD HTML into this component's history with timestamp + score
     mongodb["users"].update_one(
         {"user_id": user_id},
         {
             "$push": {
-                f"variants.{VariantLetter}.history": {
+                f"components.{component_id}.{VariantLetter}.history": {
                     "html": oldHtml,
-                    "score_before_reset": user["variants"][VariantLetter]["current_score"],
-                    "timestamp": datetime.utcnow().isoformat()
+                    "score_before_reset": component[VariantLetter]["current_score"],
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
             }
         }
     )
 
-    # 2. Now generate NEW HTML (stubbed for now)
-    new_html = AIRags(user_id, contextHtml, VariantLetter, opposingVariantLetter)
+    # 2️⃣ Generate NEW variant HTML via OpenAI RAG pipeline
+    new_html = AIRags(
+        user_id=user_id,
+        contextHtml=contextHtml,
+        varianceLetter=VariantLetter,
+        opposingVariantLetter=opposingVariantLetter,
+        component_id=component_id      # 🔥 YOU MUST PASS THIS
+    )
 
-
-    # 3. Store the new HTML in current_html
+    # 3️⃣ Store NEW HTML into this component's variant
     mongodb["users"].update_one(
         {"user_id": user_id},
         {
             "$set": {
-                f"variants.{VariantLetter}.current_html": new_html
+                f"components.{component_id}.{VariantLetter}.current_html": new_html
             }
         }
     )
 
-    print(mongodb["users"].find_one({"user_id": user_id}))
+    print(f"🔄 Re-rendered variant {VariantLetter} for component {component_id}")
 
-    reset_scores_to_midpoint(user_id)
+    # 4️⃣ Reset that component's scores (not global)
+    reset_scores_to_midpoint(user_id, component_id)
+    return None
 
 
-def reset_scores_to_midpoint(user_id: str):
+def reset_scores_to_midpoint(user_id: str, component_id: str):
     user = users_collection.find_one({"user_id": user_id})
 
     if not user:
-        print("⚠️ User not found for midpoint reset.")
-        return
+        raise Exception ("⚠️ User not found for midpoint reset.")
 
-    A_score = user["variants"]["A"]["current_score"]
-    B_score = user["variants"]["B"]["current_score"]
+
+    component = user.get("components", {}).get(component_id)
+    if not component:
+        raise Exception (f"⚠️ Component '{component_id}' not found for midpoint reset.")
+
+
+    A_score = component["A"]["current_score"]
+    B_score = component["B"]["current_score"]
 
     new_score = (A_score + B_score) / 2
 
-    # Update scores & reset trials back to 0
     users_collection.update_one(
         {"user_id": user_id},
         {
             "$set": {
-                "variants.A.current_score": new_score,
-                "variants.B.current_score": new_score,
-                "variants.A.number_of_trials": 0,
-                "variants.B.number_of_trials": 0
+                f"components.{component_id}.A.current_score": new_score,
+                f"components.{component_id}.B.current_score": new_score,
+                f"components.{component_id}.A.number_of_trials": 0,
+                f"components.{component_id}.B.number_of_trials": 0
             }
         }
     )
 
-    print(f"🔄 Reset scores → midpoint = {new_score:.4f}")
+    print(f"🔄 Reset scores for component '{component_id}' → midpoint = {new_score:.4f}")
+
+
 
 def AIRags(
     user_id: str,
     contextHtml: str,
     varianceLetter: str,
-    opposingVariantLetter: str
+    opposingVariantLetter: str,
+    component_id: str,
 ) -> str:
     """
     Regenerate the HTML for the losing variant using:
@@ -302,16 +397,24 @@ def AIRags(
     """
 
     print("RAG RAN!!!")
-    # Fetch user + opposing HTML + score
+
+    # Fetch user
     user = mongodb["users"].find_one({"user_id": user_id})
     if not user:
         return "<div>Error: user not found</div>"
 
-    losing_html = user["variants"][varianceLetter]["current_html"]
-    winning_variant = user["variants"][opposingVariantLetter]
+    # NEW: navigate into components → selected component → variants A/B
+    component = user["components"].get(component_id)
+    if not component:
+        return f"<div>Error: component '{component_id}' not found</div>"
 
-    winning_html = user["variants"][opposingVariantLetter]["current_html"]
-    winning_score = user["variants"][opposingVariantLetter]["current_score"]
+    # Losing variant HTML
+    losing_html = component[varianceLetter]["current_html"]
+
+    # Winning variant block
+    winning_variant = component[opposingVariantLetter]
+    winning_html = winning_variant["current_html"]
+    winning_score = winning_variant["current_score"]
 
     # -------------------------
     # 🔥 Prompt for OpenAI
@@ -361,13 +464,28 @@ Return ONLY raw HTML — no explanations.
 # ----------------------------------------
 @app.post("/tagAi")
 async def tag_ai(payload: HtmlPayload):
-    return aiTag(payload.user_id, payload.changingHtml, payload.contextHtml)
+    return aiTag(
+        payload.user_id,
+        payload.changingHtml,
+        payload.contextHtml,
+        payload.component_id   # ✅ NEW
+    )
 
 
 @app.post("/rewardTag")
-async def reward_tag(payload: RewardPayload):
-    return rewardTag(payload.user_id, payload.reward, payload.contextHtml, payload.variantAttributed)
+async def reward_tag(payload: RewardPayload, background_tasks: BackgroundTasks):
+    # loop through component IDs and queue work
+    for component_id in payload.component_ids:
+        background_tasks.add_task(
+            rewardTag,
+            payload.user_id,
+            payload.reward,
+            payload.contextHtml,
+            payload.variantAttributed,
+            component_id
+        )
 
+    return {"status": "queued", "msg": "Reward processing started"}
 
 # ----------------------------------------
 # Dashboard API Endpoints
