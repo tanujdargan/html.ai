@@ -9,7 +9,7 @@ class AiOptimizeElement extends HTMLElement {
         this.componentId = "";
         this.sessionId = this.getOrCreateSession();
         this.currentVariantId = null;
-        this.apiBaseUrl = "http://localhost:8000";
+        this.apiBaseUrl = "http://localhost:3000";
     }
 
     connectedCallback() {

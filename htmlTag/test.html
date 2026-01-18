@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>htmlTag Test - Port 3000</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        #user-id {
+            font-family: 'Monaco', monospace;
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #667eea;
+        }
+        .box {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid #e5e7eb;
+        }
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="badge">✅ htmlTag Project - Port 3000</span>
+        <h1>html.ai Test Page</h1>
+        <p>This page connects to <strong>http://localhost:3000</strong> (htmlTag backend)</p>
+        
+        <div class="box">
+            <p><strong>Your User ID:</strong> <span id="user-id">Loading...</span></p>
+            <button onclick="testConnection()">Test Backend Connection</button>
+            <button onclick="createUser()">Create User</button>
+            <button onclick="sendReward()">Send Reward</button>
+        </div>
+
+        <div id="status"></div>
+        <div id="response"></div>
+    </div>
+
+    <div class="card">
+        <h2>Dashboard Link</h2>
+        <p>After creating a user and sending rewards, check the dashboard:</p>
+        <button onclick="window.open('dashboard.html', '_blank')">Open Dashboard</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let userId = localStorage.getItem('htmlai_user_id');
+
+        if (!userId) {
+            userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            localStorage.setItem('htmlai_user_id', userId);
+        }
+
+        document.getElementById('user-id').textContent = userId;
+
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${isError ? 'error' : 'success'}`;
+            statusDiv.textContent = message;
+        }
+
+        function showResponse(data) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function testConnection() {
+            try {
+                showStatus('Testing connection to backend...');
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                showStatus(`✅ Backend is running! Status: ${data.status}`);
+                showResponse(data);
+            } catch (error) {
+                showStatus(`❌ Cannot connect to backend: ${error.message}`, true);
+                showResponse({ error: error.message });
+            }
+        }
+
+        async function createUser() {
+            try {
+                showStatus('Creating user...');
+                const response = await fetch(`${API_BASE}/api/user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        component_id: 'test-component',
+                        original_html: '<div><h2>Test Component</h2><p>Original HTML</p><button>Click Me</button></div>'
+                    })
+                });
+                const data = await response.json();
+                showStatus(`✅ User created! Selected variant: ${data.selected_variant}`);
+                showResponse(data);
+            } catch (error) {
+                showStatus(`❌ Failed to create user: ${error.message}`, true);
+                showResponse({ error: error.message });
+            }
+        }
+
+        async function sendReward() {
+            try {
+                showStatus('Sending reward...');
+                const response = await fetch(`${API_BASE}/api/reward`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        component_id: 'test-component',
+                        variant_id: 'A',
+                        reward_type: 'click',
+                        value: 1.0
+                    })
+                });
+                const data = await response.json();
+                showStatus(`✅ Reward sent! New score: ${data.new_score}`);
+                showResponse(data);
+            } catch (error) {
+                showStatus(`❌ Failed to send reward: ${error.message}`, true);
+                showResponse({ error: error.message });
+            }
+        }
+
+        // Auto-test connection on load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 500);
+        });
+    </script>
+</body>
+</html>

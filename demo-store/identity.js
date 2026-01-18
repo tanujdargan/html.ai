@@ -15,7 +15,7 @@
 
   // Configuration
   const CONFIG = {
-    apiBaseUrl: 'http://localhost:3000',  // htmlTag backend port
+    apiBaseUrl: 'http://localhost:8000',  // Adaptive Identity backend port
     sessionKey: 'ai_optimize_session',    // Standardized with SDK
     userIdCookie: 'ai_optimize_user_id',  // Standardized with SDK
     cookieMaxAgeDays: 365,  // 1 year persistence

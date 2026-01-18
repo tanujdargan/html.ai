@@ -484,7 +484,7 @@
             <!-- Product 1 -->
             <div class="product-card"
                  data-identity-component="product_card_1"
-                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_headphones'})">
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_headphones', component: 'product_card'})">
                 <div class="product-image">
                     <div class="product-badge">Best Seller</div>
                     🎧
@@ -509,7 +509,7 @@
             <!-- Product 2 -->
             <div class="product-card"
                  data-identity-component="product_card_2"
-                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_watch'})">
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_watch', component: 'product_card'})">
                 <div class="product-image">
                     <div class="product-badge">New</div>
                     ⌚
@@ -533,7 +533,7 @@
             <!-- Product 3 -->
             <div class="product-card"
                  data-identity-component="product_card_3"
-                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_case'})">
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_case', component: 'product_card'})">
                 <div class="product-image">
                     📱
                 </div>
@@ -557,7 +557,7 @@
             <!-- Product 4 -->
             <div class="product-card"
                  data-identity-component="product_card_4"
-                 onclick="window.AdaptiveIdentity.track('product_click', {product_id: 'prod_charger'})">
+                 onclick="window.AdaptiveIdentity.track('click', {product_id: 'prod_charger', component: 'product_card'})">
                 <div class="product-image">
                     🔌
                 </div>
@@ -615,13 +615,44 @@
         const cartCountEl = document.querySelector('.cart-count');
 
         document.querySelectorAll('.product-info button').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', async function() {
                 cartCount++;
                 cartCountEl.textContent = cartCount;
                 cartCountEl.style.animation = 'pulse 0.3s ease';
                 setTimeout(() => {
                     cartCountEl.style.animation = '';
                 }, 300);
+
+                // Send conversion reward to backend for analytics
+                const heroElement = document.getElementById('adaptive-hero');
+                const currentVariantId = heroElement?.dataset.variantId;
+
+                if (currentVariantId && window.AdaptiveIdentity) {
+                    try {
+                        const productCard = this.closest('.product-card');
+                        const productName = productCard.querySelector('h3').textContent;
+                        const productPrice = productCard.querySelector('.price').textContent;
+
+                        await fetch('http://localhost:8000/api/rewards/track', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                session_id: window.AdaptiveIdentity.sessionManager.sessionId,
+                                component_id: 'hero',
+                                reward_type: 'conversion',
+                                properties: {
+                                    variant_id: currentVariantId,
+                                    product_name: productName,
+                                    product_price: productPrice,
+                                    conversion_timestamp: new Date().toISOString()
+                                }
+                            })
+                        });
+                        console.log('[Conversion Tracked]', productName, '→ Variant:', currentVariantId);
+                    } catch (error) {
+                        console.error('Failed to track conversion:', error);
+                    }
+                }
             });
         });
 
