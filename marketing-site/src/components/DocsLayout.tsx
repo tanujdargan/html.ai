@@ -133,11 +133,11 @@ export default function DocsLayout({ children, title, description }: DocsLayoutP
                     href={section.href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all ${
                       active 
-                        ? "bg-primary/20 text-primary" 
+                        ? "bg-white/10 gradient-text" 
                         : "text-foreground hover:bg-white/5"
                     }`}
                   >
-                    <Icon size={18} />
+                    <Icon size={18} className={active ? "gradient-icon" : ""} />
                     {section.title}
                   </Link>
                   {section.items && active && (
@@ -179,11 +179,11 @@ export default function DocsLayout({ children, title, description }: DocsLayoutP
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all ${
                       active 
-                        ? "bg-primary/20 text-primary" 
+                        ? "bg-white/10 gradient-text" 
                         : "text-foreground hover:bg-white/5"
                     }`}
                   >
-                    <Icon size={18} />
+                    <Icon size={18} className={active ? "gradient-icon" : ""} />
                     {section.title}
                   </Link>
                   {section.items && (

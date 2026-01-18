@@ -16,6 +16,14 @@
   --card: 0 0% 6%;
   --card-foreground: 0 0% 98%;
   --border: 240 4% 16%;
+
+  /* Gradient accent colors */
+  --gradient-start: #ef4444;
+  --gradient-mid1: #f97316;
+  --gradient-mid2: #a855f7;
+  --gradient-mid3: #3b82f6;
+  --gradient-end: #06b6d4;
+  --gradient: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid1) 25%, var(--gradient-mid2) 50%, var(--gradient-mid3) 75%, var(--gradient-end) 100%);
 }
 
 * {
@@ -60,10 +68,25 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #3b82f6 100%);
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Gradient border */
+.gradient-border {
+  border-image: var(--gradient) 1;
+}
+
+/* Gradient background */
+.gradient-bg {
+  background: var(--gradient);
+}
+
+/* Gradient accent icon */
+.gradient-icon {
+  color: var(--gradient-start);
 }
 
 /* Glass effect */
@@ -76,7 +99,7 @@ body {
 
 /* Glow effect */
 .glow {
-  box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--gradient-mid2) 30%, transparent);
 }
 
 /* Masonry grid */
