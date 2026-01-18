@@ -1,10 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from pymongo import MongoClient
+from typing import Optional
 import random
 from openai import OpenAI
 import os
+import threading
+import uuid
 from datetime import datetime
 
 
@@ -33,6 +37,8 @@ mongo_client = MongoClient("mongodb://mongo:27017/")  # works inside Docker
 mongodb = mongo_client["html_ai"]
 
 users_collection = mongodb["users"]  # collection
+global_users_collection = mongodb["global_users"]  # cross-site identity
+events_collection = mongodb["events"]  # conversion tracking
 
 
 
@@ -49,7 +55,15 @@ class RewardPayload(BaseModel):
     user_id: str
     reward: float
     contextHtml: str
-    variantAttributed: str
+
+
+class EventPayload(BaseModel):
+    user_id: str
+    business_id: str
+    event_type: str  # "page_view", "product_click", "add_to_cart", "purchase"
+    variant: Optional[str] = None
+    product_id: Optional[str] = None
+    metadata: Optional[dict] = None
 
 
 # ----------------------------------------
@@ -596,6 +610,286 @@ async def get_dashboard_analytics():
             "total_users": 0,
             "active_sessions": 0
         }
+
+
+# ----------------------------------------
+# Event/Conversion Tracking
+# ----------------------------------------
+@app.post("/track/event")
+async def track_event(payload: EventPayload):
+    """
+    Track user events for conversion rate calculation
+    """
+    from datetime import datetime
+
+    event = {
+        "user_id": payload.user_id,
+        "business_id": payload.business_id,
+        "event_type": payload.event_type,
+        "variant": payload.variant,
+        "product_id": payload.product_id,
+        "metadata": payload.metadata,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    events_collection.insert_one(event)
+
+    return {"status": "tracked", "event_type": payload.event_type}
+
+
+@app.get("/api/conversions/all")
+async def get_all_conversion_stats():
+    """
+    Get conversion stats across all businesses
+    Conversion = unique users who added to cart / unique users who viewed page
+    NOTE: This route MUST be defined before /{business_id} to avoid "all" being matched as a business_id
+    """
+    try:
+        # Count unique users per event type (more realistic conversion rate)
+        unique_viewers = len(events_collection.distinct("user_id", {"event_type": "page_view"}))
+        unique_converters = len(events_collection.distinct("user_id", {"event_type": "add_to_cart"}))
+
+        # By variant - unique users
+        viewers_a = len(events_collection.distinct("user_id", {"event_type": "page_view", "variant": "A"}))
+        viewers_b = len(events_collection.distinct("user_id", {"event_type": "page_view", "variant": "B"}))
+        converters_a = len(events_collection.distinct("user_id", {"event_type": "add_to_cart", "variant": "A"}))
+        converters_b = len(events_collection.distinct("user_id", {"event_type": "add_to_cart", "variant": "B"}))
+
+        # Calculate rates (capped at 100%)
+        conv_rate_a = min((converters_a / viewers_a * 100), 100) if viewers_a > 0 else 0
+        conv_rate_b = min((converters_b / viewers_b * 100), 100) if viewers_b > 0 else 0
+        overall_rate = min((unique_converters / unique_viewers * 100), 100) if unique_viewers > 0 else 0
+
+        return {
+            "total_page_views": unique_viewers,
+            "total_conversions": unique_converters,
+            "overall_conversion_rate": round(overall_rate, 2),
+            "variant_a": {
+                "page_views": viewers_a,
+                "conversions": converters_a,
+                "conversion_rate": round(conv_rate_a, 2)
+            },
+            "variant_b": {
+                "page_views": viewers_b,
+                "conversions": converters_b,
+                "conversion_rate": round(conv_rate_b, 2)
+            }
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/conversions/{business_id}")
+async def get_conversion_stats(business_id: str):
+    """
+    Get conversion stats for a business
+    Conversion = unique users who clicked / unique users who viewed
+    """
+    try:
+        # Count unique users by variant (more realistic conversion rate)
+        viewers_a = len(events_collection.distinct("user_id", {
+            "business_id": business_id,
+            "event_type": "page_view",
+            "variant": "A"
+        }))
+        viewers_b = len(events_collection.distinct("user_id", {
+            "business_id": business_id,
+            "event_type": "page_view",
+            "variant": "B"
+        }))
+
+        # Count unique users who clicked by variant
+        clickers_a = len(events_collection.distinct("user_id", {
+            "business_id": business_id,
+            "event_type": "product_click",
+            "variant": "A"
+        }))
+        clickers_b = len(events_collection.distinct("user_id", {
+            "business_id": business_id,
+            "event_type": "product_click",
+            "variant": "B"
+        }))
+
+        # Calculate conversion rates (capped at 100%)
+        conv_rate_a = min((clickers_a / viewers_a * 100), 100) if viewers_a > 0 else 0
+        conv_rate_b = min((clickers_b / viewers_b * 100), 100) if viewers_b > 0 else 0
+
+        return {
+            "business_id": business_id,
+            "variant_a": {
+                "page_views": viewers_a,
+                "clicks": clickers_a,
+                "conversion_rate": round(conv_rate_a, 2)
+            },
+            "variant_b": {
+                "page_views": viewers_b,
+                "clicks": clickers_b,
+                "conversion_rate": round(conv_rate_b, 2)
+            },
+            "winner": "A" if conv_rate_a > conv_rate_b else "B" if conv_rate_b > conv_rate_a else "Tie"
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ----------------------------------------
+# Cross-Site Sync & Cookie Endpoints
+# ----------------------------------------
+def generate_global_uid():
+    """Generate a unique global user ID"""
+    return f"guid_{uuid.uuid4().hex[:16]}"
+
+
+def get_or_create_global_uid(business_id: str, local_uid: str) -> str:
+    """Get existing global UID or create new one"""
+    # Check if this local UID is already linked
+    global_user = global_users_collection.find_one({
+        f"business_uids.{business_id}": local_uid
+    })
+
+    if global_user:
+        return global_user["global_uid"]
+
+    # Create new global user
+    global_uid = generate_global_uid()
+    global_users_collection.insert_one({
+        "global_uid": global_uid,
+        "business_uids": {business_id: local_uid},
+        "created_at": str(uuid.uuid1()),
+        "cross_site_visits": 1
+    })
+
+    return global_uid
+
+
+@app.get("/sync/pixel.gif")
+async def tracking_pixel(
+    business_id: str,
+    local_uid: str,
+    response: Response
+):
+    """
+    1x1 tracking pixel for cross-site sync
+    Sets first-party cookie on tracking domain
+    """
+    global_uid = get_or_create_global_uid(business_id, local_uid)
+
+    # Set cookie (1 year)
+    response.set_cookie(
+        key="htmlai_guid",
+        value=global_uid,
+        max_age=365 * 24 * 60 * 60,
+        httponly=True,
+        samesite="lax"
+    )
+
+    # Return 1x1 transparent GIF
+    gif_bytes = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+    return Response(content=gif_bytes, media_type="image/gif")
+
+
+@app.get("/sync/iframe", response_class=HTMLResponse)
+async def sync_iframe(request: Request):
+    """
+    Sync iframe that runs on tracking domain
+    Reads global UID cookie and posts to parent
+    """
+    global_uid = request.cookies.get("htmlai_guid", "")
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head><title>Sync</title></head>
+<body>
+<script>
+(function() {{
+    var globalUid = "{global_uid}";
+
+    // If no global UID, generate one
+    if (!globalUid) {{
+        globalUid = 'guid_' + Math.random().toString(36).substr(2, 16) + Date.now().toString(36);
+        // Set cookie via API
+        fetch('/sync/set-cookie?guid=' + globalUid, {{ credentials: 'include' }});
+    }}
+
+    // Post message to parent with global UID
+    if (window.parent !== window) {{
+        window.parent.postMessage({{
+            type: 'htmlai_sync',
+            global_uid: globalUid
+        }}, '*');
+    }}
+}})();
+</script>
+</body>
+</html>
+"""
+    return HTMLResponse(content=html)
+
+
+@app.get("/sync/set-cookie")
+async def set_sync_cookie(guid: str, response: Response):
+    """Set the global UID cookie"""
+    response.set_cookie(
+        key="htmlai_guid",
+        value=guid,
+        max_age=365 * 24 * 60 * 60,
+        httponly=False,
+        samesite="lax"
+    )
+    return {"status": "ok", "global_uid": guid}
+
+
+@app.post("/sync/link")
+async def link_user(request: Request):
+    """
+    Link a business's local UID to the global UID
+    Called by SDK after sync iframe returns global UID
+    """
+    data = await request.json()
+    business_id = data.get("business_id")
+    local_uid = data.get("local_uid")
+    global_uid = data.get("global_uid")
+
+    if not all([business_id, local_uid, global_uid]):
+        return {"error": "Missing required fields"}
+
+    # Update or create global user mapping
+    existing = global_users_collection.find_one({"global_uid": global_uid})
+
+    if existing:
+        # Add this business mapping
+        global_users_collection.update_one(
+            {"global_uid": global_uid},
+            {
+                "$set": {f"business_uids.{business_id}": local_uid},
+                "$inc": {"cross_site_visits": 1}
+            }
+        )
+    else:
+        # Create new
+        global_users_collection.insert_one({
+            "global_uid": global_uid,
+            "business_uids": {business_id: local_uid},
+            "cross_site_visits": 1
+        })
+
+    return {"status": "linked", "global_uid": global_uid}
+
+
+@app.get("/sync/lookup")
+async def lookup_global_user(global_uid: str):
+    """
+    Lookup a global user's cross-site data
+    Returns all linked business UIDs
+    """
+    global_user = global_users_collection.find_one({"global_uid": global_uid})
+
+    if not global_user:
+        return {"error": "Global user not found"}
+
+    global_user["_id"] = str(global_user["_id"])
+    return global_user
 
 
 # ----------------------------------------

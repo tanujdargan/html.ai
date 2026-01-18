@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/shopify.png">
 
     <!-- AI Optimization Tag -->
     <script type="module" src="./sdk/src/AiOptimizeElement_v2.js"></script>
@@ -480,6 +481,16 @@
         <div class="debug-item" id="cross-site-info" style="display:none; color: #27ae60;">
             <span class="debug-label">Cross-Site Data:</span> Linked to global profile
         </div>
+        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
+            <div class="debug-item"><span class="debug-label">Behavior Score:</span> <span id="debug-behavior-score" style="font-weight: bold; color: #ffcc00;">0</span>/10</div>
+            <div class="debug-item">
+                <span class="debug-label">Behavior Reward:</span>
+                <span id="debug-behavior-reward" style="font-weight: bold; color: #ff4444;">FALSE</span>
+            </div>
+            <div style="font-size: 0.65rem; color: #666; margin-top: 4px;">
+                Time: <span id="score-time">0</span> | Hovers: <span id="score-hovers">0</span> | Clicks: <span id="score-clicks">0</span>
+            </div>
+        </div>
         <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #333;">
             <reward-button variant="A" reward="9" id="reward-btn" style="width: 100%; padding: 8px; background: #008060; border: none; border-radius: 4px; color: white; cursor: pointer; font-weight: 600;">
                 Give Reward
@@ -490,44 +501,260 @@
         </div>
     </div>
 
-    <!-- html.ai SDK -->
-    <script src="http://localhost:8080/htmlai-sdk.js"
-            data-api-key="pk_demo_shoes_123"
-            data-api-url="http://localhost:3000"
-            data-tracking-domain="http://localhost:3001"
-            data-debug>
-    </script>
+    <!-- Cross-Site Sync Banner (shows when synced) -->
+    <div id="sync-banner" style="display:none; position:fixed; top:0; left:0; right:0; background: linear-gradient(90deg, #10b981, #3b82f6); color:white; padding:12px 20px; text-align:center; font-weight:600; z-index:9999; animation: slideDown 0.5s ease-out;">
+        <span style="margin-right:10px;">🔗</span>
+        Cross-Site Identity Synced! Your profile from <strong id="sync-source">another business</strong> has been linked.
+        <button onclick="this.parentElement.style.display='none'" style="margin-left:20px; background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 12px; border-radius:4px; cursor:pointer;">Dismiss</button>
+    </div>
+    <style>
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .sync-pulse { animation: pulse 2s infinite; }
+    </style>
+
+    <!-- Cross-Site Sync Iframe -->
+    <iframe id="sync-iframe" src="http://localhost:3000/sync/iframe" style="display:none;" width="0" height="0"></iframe>
 
     <script>
-        // Update debug panel
+        const BUSINESS_ID = 'biz_shoes';
         let eventCount = 0;
+        let hasShownSyncBanner = sessionStorage.getItem('syncBannerShown_' + BUSINESS_ID);
 
-        // Wait for SDK to initialize
-        function initDebug() {
-            if (!window.HtmlAI || !window.HtmlAI.getUser) {
-                setTimeout(initDebug, 500);
-                return;
+        // ==========================================
+        // BEHAVIOR SCORING SYSTEM
+        // ==========================================
+        const behaviorState = {
+            timeOnPage: 0,        // seconds
+            buttonHovers: 0,      // count of button hovers
+            buttonClicks: 0,      // count of button clicks
+            score: 0,             // 0-10 scale
+            rewardTriggered: false
+        };
+
+        const SCORE_THRESHOLD = 5; // Trigger reward at score >= 5
+
+        function calculateBehaviorScore() {
+            // Time score: 0-4 points (1 point per 15 seconds, max 4)
+            const timeScore = Math.min(Math.floor(behaviorState.timeOnPage / 15), 4);
+
+            // Hover score: 0-3 points (1 point per 2 hovers, max 3)
+            const hoverScore = Math.min(Math.floor(behaviorState.buttonHovers / 2), 3);
+
+            // Click score: 0-3 points (1 point per click, max 3)
+            const clickScore = Math.min(behaviorState.buttonClicks, 3);
+
+            behaviorState.score = timeScore + hoverScore + clickScore;
+            return behaviorState.score;
+        }
+
+        function updateBehaviorUI() {
+            const score = calculateBehaviorScore();
+
+            // Update debug panel
+            document.getElementById('debug-behavior-score').textContent = score;
+            document.getElementById('score-time').textContent = Math.floor(behaviorState.timeOnPage) + 's';
+            document.getElementById('score-hovers').textContent = behaviorState.buttonHovers;
+            document.getElementById('score-clicks').textContent = behaviorState.buttonClicks;
+
+            // Update color based on score
+            const scoreEl = document.getElementById('debug-behavior-score');
+            if (score >= SCORE_THRESHOLD) {
+                scoreEl.style.color = '#00ff00';
+            } else if (score >= 3) {
+                scoreEl.style.color = '#ffcc00';
+            } else {
+                scoreEl.style.color = '#ff8800';
             }
 
-            const user = window.HtmlAI.getUser();
-            document.getElementById('debug-uid').textContent = user.user_id || 'N/A';
-            document.getElementById('debug-session').textContent = user.session_id || 'N/A';
+            // Check if reward should trigger
+            if (score >= SCORE_THRESHOLD && !behaviorState.rewardTriggered) {
+                triggerBehaviorReward();
+            }
+        }
 
-            if (user.global_uid) {
-                document.getElementById('debug-guid').textContent = user.global_uid;
-                document.getElementById('cross-site-tag').style.display = 'inline';
-                document.getElementById('cross-site-info').style.display = 'block';
+        function triggerBehaviorReward() {
+            behaviorState.rewardTriggered = true;
+
+            // Update UI
+            const rewardEl = document.getElementById('debug-behavior-reward');
+            rewardEl.textContent = 'TRUE';
+            rewardEl.style.color = '#00ff00';
+
+            // Auto-click the reward button
+            const rewardBtn = document.getElementById('reward-btn');
+            if (rewardBtn) {
+                // Set reward value based on behavior score (higher score = higher reward)
+                const rewardValue = Math.min(behaviorState.score, 10);
+                rewardBtn.setAttribute('reward', rewardValue);
+                rewardBtn.click();
+                console.log('🎉 Behavior reward triggered! Score:', behaviorState.score, 'Reward:', rewardValue);
             }
 
-            // Listen for cross-site sync
-            window.HtmlAI.onSync((guid) => {
-                document.getElementById('debug-guid').textContent = guid;
-                document.getElementById('cross-site-tag').style.display = 'inline';
-                document.getElementById('cross-site-info').style.display = 'block';
+            // Track behavior reward event
+            trackEvent('behavior_reward', null, {
+                score: behaviorState.score,
+                time_on_page: behaviorState.timeOnPage,
+                hovers: behaviorState.buttonHovers,
+                clicks: behaviorState.buttonClicks
             });
         }
 
-        // Start checking for SDK
+        // Time tracking - increment every second
+        setInterval(() => {
+            behaviorState.timeOnPage++;
+            updateBehaviorUI();
+        }, 1000);
+
+        // Track hovers on buttons and interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const trackableElements = document.querySelectorAll('button, .product-card, a, .hero-badge');
+            trackableElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    behaviorState.buttonHovers++;
+                    updateBehaviorUI();
+                    console.log('👆 Hover detected, total:', behaviorState.buttonHovers);
+                });
+            });
+        });
+
+        // Track clicks on interactive elements (separate from product tracking)
+        document.addEventListener('click', (e) => {
+            const clickable = e.target.closest('button, a, .product-card');
+            if (clickable) {
+                behaviorState.buttonClicks++;
+                updateBehaviorUI();
+                console.log('🖱️ Click detected, total:', behaviorState.buttonClicks);
+            }
+        });
+
+        // ==========================================
+        // EVENT TRACKING
+        // ==========================================
+
+        // Track event helper
+        async function trackEvent(eventType, productId = null, metadata = null) {
+            // Wait for HtmlAICookies to be available
+            if (!window.HtmlAICookies) {
+                console.log('⏳ Waiting for HtmlAICookies...');
+                setTimeout(() => trackEvent(eventType, productId, metadata), 500);
+                return;
+            }
+
+            const userId = window.HtmlAICookies.getUserId();
+            const variant = window.currentVariant || 'A';
+
+            if (!userId) {
+                console.warn('⚠️ No user ID available for tracking');
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/track/event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        business_id: BUSINESS_ID,
+                        event_type: eventType,
+                        variant: variant,
+                        product_id: productId,
+                        metadata: metadata
+                    })
+                });
+                const data = await res.json();
+                console.log('📊 Tracked:', eventType, variant, data);
+            } catch (err) {
+                console.error('❌ Failed to track event:', err);
+            }
+        }
+
+        // Track page view on load
+        window.addEventListener('load', () => {
+            setTimeout(() => trackEvent('page_view'), 2000);
+        });
+
+        // Listen for sync message from iframe
+        window.addEventListener('message', async (event) => {
+            if (event.data && event.data.type === 'htmlai_sync') {
+                const globalUid = event.data.global_uid;
+                console.log('🌐 Received global UID from sync:', globalUid);
+
+                // Check if this is a returning cross-site user
+                const existingGuid = window.HtmlAICookies?.getGlobalUid();
+                const isReturningCrossSite = existingGuid && existingGuid === globalUid;
+
+                // Store in cookie
+                if (window.HtmlAICookies) {
+                    window.HtmlAICookies.setGlobalUid(globalUid);
+                }
+
+                // Update debug panel
+                document.getElementById('debug-guid').textContent = globalUid;
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
+
+                // Show sync banner if not shown before in this session
+                if (!hasShownSyncBanner) {
+                    // Check if user has visited other business
+                    try {
+                        const lookupRes = await fetch(`http://localhost:3000/sync/lookup?global_uid=${globalUid}`);
+                        const lookupData = await lookupRes.json();
+
+                        if (lookupData.business_uids && Object.keys(lookupData.business_uids).length > 0) {
+                            const otherBusinesses = Object.keys(lookupData.business_uids).filter(b => b !== BUSINESS_ID);
+                            if (otherBusinesses.length > 0) {
+                                const sourceBiz = otherBusinesses[0] === 'biz_clothes' ? 'Amazoon (Clothes)' : otherBusinesses[0];
+                                document.getElementById('sync-source').textContent = sourceBiz;
+                                document.getElementById('sync-banner').style.display = 'block';
+                                sessionStorage.setItem('syncBannerShown_' + BUSINESS_ID, 'true');
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Could not check cross-site status');
+                    }
+                }
+
+                // Link local user to global user
+                const localUid = window.HtmlAICookies?.getUserId();
+                if (localUid) {
+                    try {
+                        await fetch('http://localhost:3000/sync/link', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                business_id: BUSINESS_ID,
+                                local_uid: localUid,
+                                global_uid: globalUid
+                            })
+                        });
+                        console.log('✅ Linked local user to global profile');
+                    } catch (err) {
+                        console.error('Failed to link user:', err);
+                    }
+                }
+            }
+        });
+
+        // Initialize debug panel after AI element loads
+        function initDebug() {
+            if (window.HtmlAICookies) {
+                const userId = window.HtmlAICookies.getUserId();
+                const globalUid = window.HtmlAICookies.getGlobalUid();
+
+                document.getElementById('debug-uid').textContent = userId ? userId : 'N/A';
+                document.getElementById('debug-session').textContent = 'session_' + Date.now().toString(36);
+
+                if (globalUid) {
+                    document.getElementById('debug-guid').textContent = globalUid;
+                    document.getElementById('cross-site-tag').style.display = 'inline';
+                    document.getElementById('cross-site-info').style.display = 'block';
+                }
+            } else {
+                setTimeout(initDebug, 500);
+            }
+        }
+
         setTimeout(initDebug, 1000);
 
         // Track clicks on products
@@ -535,11 +762,22 @@
             card.addEventListener('click', () => {
                 eventCount++;
                 document.getElementById('debug-events').textContent = eventCount;
-                if (window.HtmlAI && window.HtmlAI.track) {
-                    window.HtmlAI.track('product_click', card.dataset.productId, {
-                        product_name: card.querySelector('h3').textContent
-                    });
-                }
+
+                const productId = card.dataset.productId || 'unknown';
+                const productName = card.querySelector('h3')?.textContent || 'Unknown Product';
+                trackEvent('product_click', productId, { product_name: productName });
+            });
+        });
+
+        // Track Add to Cart button clicks specifically
+        document.querySelectorAll('.product-card button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent double tracking
+                const card = btn.closest('.product-card');
+                const productId = card?.dataset.productId || 'unknown';
+                const productName = card?.querySelector('h3')?.textContent || 'Unknown Product';
+                trackEvent('add_to_cart', productId, { product_name: productName });
+                console.log('🛒 Add to cart:', productName);
             });
         });
     </script>

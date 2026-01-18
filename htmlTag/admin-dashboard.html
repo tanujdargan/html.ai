@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>html.ai - Analytics Dashboard</title>
+    <link rel="icon" type="image/png" href="assets/uofthacks-logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -388,24 +389,24 @@
                     <div class="value blue" id="stat-users">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Total Trials</h3>
-                    <div class="value purple" id="stat-trials">-</div>
+                    <h3>Page Views</h3>
+                    <div class="value purple" id="stat-views">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Variant A Wins</h3>
-                    <div class="value green" id="stat-a-wins">-</div>
+                    <h3>Add to Cart</h3>
+                    <div class="value yellow" id="stat-clicks">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Variant B Wins</h3>
-                    <div class="value yellow" id="stat-b-wins">-</div>
+                    <h3>Conversion Rate</h3>
+                    <div class="value green" id="stat-conversion">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Avg Score A</h3>
-                    <div class="value green" id="stat-a-score">-</div>
+                    <h3>Conv. Rate A</h3>
+                    <div class="value green" id="stat-conv-a">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Avg Score B</h3>
-                    <div class="value yellow" id="stat-b-score">-</div>
+                    <h3>Conv. Rate B</h3>
+                    <div class="value yellow" id="stat-conv-b">-</div>
                 </div>
             </div>
 
@@ -514,16 +515,20 @@
 
         async function loadOverview() {
             try {
-                // Load stats
+                // Load user stats
                 const statsRes = await fetch(`${ANALYTICS_API}/api/stats/overview`);
                 const stats = await statsRes.json();
-
                 document.getElementById('stat-users').textContent = stats.total_users || 0;
-                document.getElementById('stat-trials').textContent = stats.total_trials || 0;
-                document.getElementById('stat-a-wins').textContent = stats.variant_a?.wins || 0;
-                document.getElementById('stat-b-wins').textContent = stats.variant_b?.wins || 0;
-                document.getElementById('stat-a-score').textContent = stats.variant_a?.avg_score || 0;
-                document.getElementById('stat-b-score').textContent = stats.variant_b?.avg_score || 0;
+
+                // Load conversion stats from main engine
+                const convRes = await fetch('http://localhost:3000/api/conversions/all');
+                const conv = await convRes.json();
+
+                document.getElementById('stat-views').textContent = conv.total_page_views || 0;
+                document.getElementById('stat-clicks').textContent = conv.total_conversions || 0;
+                document.getElementById('stat-conversion').textContent = (conv.overall_conversion_rate || 0) + '%';
+                document.getElementById('stat-conv-a').textContent = (conv.variant_a?.conversion_rate || 0) + '%';
+                document.getElementById('stat-conv-b').textContent = (conv.variant_b?.conversion_rate || 0) + '%';
 
                 // Load variants for carousel
                 const variantsRes = await fetch(`${ANALYTICS_API}/api/variants/all`);
@@ -549,7 +554,7 @@
                 const users = [...new Set(allVariants.map(v => v.user_id))];
                 const userFilter = document.getElementById('user-filter');
                 userFilter.innerHTML = '<option value="all">All Users</option>' +
-                    users.map(u => `<option value="${u}">${u.substring(0, 20)}...</option>`).join('');
+                    users.map(u => `<option value="${u}">${u}</option>`).join('');
 
                 renderCarousel('variants-carousel', allVariants);
 
@@ -600,7 +605,7 @@
                             <span class="variant-score ${v.score > 5 ? 'winner' : ''}">Score: ${v.score}</span>
                         </div>
                         <div class="variant-meta">
-                            User: ${v.user_id.substring(0, 15)}... | Trials: ${v.trials}
+                            User: ${v.user_id} | Trials: ${v.trials}
                         </div>
                     </div>
                 </div>
