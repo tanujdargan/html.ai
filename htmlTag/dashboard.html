@@ -478,6 +478,124 @@
         .empty-state-text {
             font-size: 14px;
         }
+
+        /* Carousel Styles */
+        .carousel-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e1e3e5;
+            padding: 32px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f7f7f7;
+            border: 1px solid #e1e3e5;
+        }
+
+        .carousel-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .carousel-slide iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .carousel-btn {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e1e3e5;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-btn:hover {
+            background: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .carousel-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #202223;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e1e3e5;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carousel-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: #008060;
+        }
+
+        .carousel-dot:hover:not(.active) {
+            background: #6d7175;
+        }
+
+        .variant-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -521,6 +639,34 @@
             </div>
         </div>
 
+        <!-- Website Variants Carousel -->
+        <div class="carousel-section" id="carousel-section" style="display: none;">
+            <h2 style="margin-bottom: 24px;">Variant HTML Preview</h2>
+
+            <div class="carousel-container">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Slides dynamically loaded from MongoDB -->
+                </div>
+
+                <div class="carousel-controls">
+                    <button class="carousel-btn" onclick="carouselPrev()" aria-label="Previous slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
+                    </button>
+                    <button class="carousel-btn" onclick="carouselNext()" aria-label="Next slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="carousel-indicators" id="carousel-indicators">
+                <!-- Dots dynamically loaded -->
+            </div>
+        </div>
+
         <!-- Users Table -->
         <div class="section">
             <div class="section-header">
@@ -558,6 +704,101 @@
     <script>
         const API_BASE = 'http://localhost:3000';
         let usersData = [];
+        let carouselVariants = [];
+        let currentSlide = 0;
+
+        // Carousel functions
+        function updateCarousel() {
+            if (carouselVariants.length === 0) return;
+
+            const track = document.getElementById('carousel-track');
+            const dots = document.querySelectorAll('.carousel-dot');
+
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function carouselNext() {
+            if (carouselVariants.length === 0) return;
+            currentSlide = (currentSlide + 1) % carouselVariants.length;
+            updateCarousel();
+        }
+
+        function carouselPrev() {
+            if (carouselVariants.length === 0) return;
+            currentSlide = (currentSlide - 1 + carouselVariants.length) % carouselVariants.length;
+            updateCarousel();
+        }
+
+        function carouselGoTo(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+
+        // keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') carouselPrev();
+            else if (e.key === 'ArrowRight') carouselNext();
+        });
+
+        function loadCarousel(users) {
+            carouselVariants = [];
+
+            // collect unique variant HTML from all users
+            users.forEach(user => {
+                const variants = user.variants || {};
+
+                if (variants.A && variants.A.current_html) {
+                    const existingA = carouselVariants.find(v => v.variant === 'A' && v.html === variants.A.current_html);
+                    if (!existingA) {
+                        carouselVariants.push({
+                            variant: 'A',
+                            html: variants.A.current_html,
+                            score: variants.A.current_score || 0,
+                            label: `Shoopify - Shoes (Score: ${(variants.A.current_score || 0).toFixed(1)})`
+                        });
+                    }
+                }
+
+                if (variants.B && variants.B.current_html) {
+                    const existingB = carouselVariants.find(v => v.variant === 'B' && v.html === variants.B.current_html);
+                    if (!existingB) {
+                        carouselVariants.push({
+                            variant: 'B',
+                            html: variants.B.current_html,
+                            score: variants.B.current_score || 0,
+                            label: `Amazoon - Clothes (Score: ${(variants.B.current_score || 0).toFixed(1)})`
+                        });
+                    }
+                }
+            });
+
+            if (carouselVariants.length > 0) {
+                document.getElementById('carousel-section').style.display = 'block';
+
+                // render slides
+                const trackHTML = carouselVariants.map(variant => `
+                    <div class="carousel-slide">
+                        <div class="variant-label">${variant.label}</div>
+                        <iframe srcdoc="${escapeHtml(variant.html)}" sandbox="allow-scripts allow-same-origin"></iframe>
+                    </div>
+                `).join('');
+                document.getElementById('carousel-track').innerHTML = trackHTML;
+
+                // render indicators
+                const indicatorsHTML = carouselVariants.map((_, index) =>
+                    `<div class="carousel-dot ${index === 0 ? 'active' : ''}" onclick="carouselGoTo(${index})"></div>`
+                ).join('');
+                document.getElementById('carousel-indicators').innerHTML = indicatorsHTML;
+
+                currentSlide = 0;
+            } else {
+                document.getElementById('carousel-section').style.display = 'none';
+            }
+        }
 
         async function loadDashboard() {
             try {
@@ -575,6 +816,9 @@
 
                 // Update stats
                 updateStats(data);
+
+                // Load carousel with variant HTML from MongoDB
+                loadCarousel(usersData);
 
                 // Render users table
                 renderUsersTable(usersData);

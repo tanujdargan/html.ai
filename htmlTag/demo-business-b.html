@@ -309,37 +309,36 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: white;
-            border: 2px solid #ff9900;
-            padding: 16px;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1rem;
             border-radius: 8px;
             font-family: monospace;
-            font-size: 11px;
-            max-width: 320px;
+            font-size: 0.75rem;
+            max-width: 350px;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .debug-panel h4 {
-            color: #0f1111;
-            margin-bottom: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
         }
 
         .debug-item {
-            margin: 6px 0;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
+            margin: 0.25rem 0;
         }
 
         .debug-label {
-            color: #565959;
-            font-weight: 600;
+            color: #888;
+        }
+
+        .cross-site-tag {
+            background: #27ae60;
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            margin-left: 0.5rem;
         }
 
         .debug-value {
@@ -415,13 +414,16 @@
     </div>
 
     <!-- Hero -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Fashion Forward Collection</h1>
-            <p>Express your unique style with our premium clothing. Free shipping on orders over $50.</p>
-            <button class="btn-amazon" id="hero-cta">Shop Fashion Deals</button>
-        </div>
-    </section>
+    <!-- AI-Optimized Hero Section -->
+    <ai-optimize component-id="hero-clothes">
+        <section class="hero">
+            <div class="hero-content">
+                <h1 data-ai="headline">Fashion Forward Collection</h1>
+                <p data-ai="subheadline">Express your unique style with our premium clothing. Free shipping on orders over $50.</p>
+                <button class="btn-amazon" id="hero-cta" data-ai="cta">Shop Fashion Deals</button>
+            </div>
+        </section>
+    </ai-optimize>
 
     <!-- Products -->
     <section class="products">
@@ -518,110 +520,77 @@
     </section>
 
     <!-- Debug Panel -->
+    <!-- Debug Panel -->
     <div class="debug-panel">
-        <h4>
-            🔧 html.ai Debug
-            <span class="cross-site-indicator" id="cross-site-tag">CROSS-SITE</span>
-        </h4>
+        <h4>html.ai Debug</h4>
+        <div class="debug-item"><span class="debug-label">Business:</span> biz_clothes (Business B)</div>
+        <div class="debug-item"><span class="debug-label">User ID:</span> <span id="debug-uid">loading...</span></div>
         <div class="debug-item">
-            <span class="debug-label">Business:</span>
-            <span class="debug-value">Amazoon (B)</span>
+            <span class="debug-label">Global UID:</span>
+            <span id="debug-guid">syncing...</span>
+            <span class="cross-site-tag" id="cross-site-tag" style="display:none">CROSS-SITE</span>
         </div>
-        <div class="debug-item">
-            <span class="debug-label">User ID:</span>
-            <span class="debug-value" id="debug-uid">Loading...</span>
+        <div class="debug-item"><span class="debug-label">Session:</span> <span id="debug-session">loading...</span></div>
+        <div class="debug-item"><span class="debug-label">Events:</span> <span id="debug-events">0</span></div>
+        <div class="debug-item" id="cross-site-info" style="display:none; color: #27ae60;">
+            <span class="debug-label">Cross-Site Data:</span> Linked to global profile
         </div>
-        <div class="debug-item">
-            <span class="debug-label">Session:</span>
-            <span class="debug-value" id="debug-session">Loading...</span>
-        </div>
-        <div class="debug-item">
-            <span class="debug-label">Events:</span>
-            <span class="debug-value" id="debug-events">0</span>
-        </div>
-        <div class="debug-item" id="cross-site-info" style="display:none;">
-            <span class="debug-label" style="color: #067d62;">From:</span>
-            <span class="debug-value" style="color: #067d62;">Shoopify</span>
-        </div>
-        <div class="cross-site-link">
-            <a href="http://localhost:8082/demo-business-a.html">→ Visit Shoopify (Shoes)</a>
+        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
+            <a href="demo-business-a.html" style="color: #e74c3c;">Visit Business A (Shoes)</a>
         </div>
     </div>
 
     <!-- html.ai SDK -->
+    <script src="http://localhost:8080/htmlai-sdk.js"
+            data-api-key="pk_demo_clothes_456"
+            data-api-url="http://localhost:3000"
+            data-tracking-domain="http://localhost:3001"
+            data-debug>
+    </script>
+
     <script>
-        const API_BASE = 'http://localhost:3000';
-        let userId = localStorage.getItem('htmlai_global_user_id');
-        let sessionId = sessionStorage.getItem('htmlai_session_id');
+        // Update debug panel
         let eventCount = 0;
 
-        // Initialize IDs
-        if (!userId) {
-            userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem('htmlai_global_user_id', userId);
+        // Wait for SDK to initialize
+        function initDebug() {
+            if (!window.HtmlAI || !window.HtmlAI.getUser) {
+                setTimeout(initDebug, 500);
+                return;
+            }
+
+            const user = window.HtmlAI.getUser();
+            document.getElementById('debug-uid').textContent = user.user_id || 'N/A';
+            document.getElementById('debug-session').textContent = user.session_id || 'N/A';
+
+            if (user.global_uid) {
+                document.getElementById('debug-guid').textContent = user.global_uid;
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
+            }
+
+            // Listen for cross-site sync
+            window.HtmlAI.onSync((guid) => {
+                document.getElementById('debug-guid').textContent = guid;
+                document.getElementById('cross-site-tag').style.display = 'inline';
+                document.getElementById('cross-site-info').style.display = 'block';
+            });
         }
-        if (!sessionId) {
-            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            sessionStorage.setItem('htmlai_session_id', sessionId);
-        }
 
-        document.getElementById('debug-uid').textContent = userId.substr(0, 16) + '...';
-        document.getElementById('debug-session').textContent = sessionId.substr(0, 16) + '...';
+        // Start checking for SDK
+        setTimeout(initDebug, 1000);
 
-        console.log('[Amazoon] User ID:', userId);
-
-        // Check if user came from Shoopify
-        const fromShoopify = document.referrer.includes('demo-business-a.html');
-        if (fromShoopify) {
-            document.getElementById('cross-site-banner').classList.add('active');
-            document.getElementById('cross-site-tag').classList.add('active');
-            document.getElementById('cross-site-info').style.display = 'flex';
-            console.log('[Amazoon] Cross-site user from Shoopify!');
-        }
-
-        // Track product clicks
+        // Track clicks on products
         document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', async () => {
+            card.addEventListener('click', () => {
                 eventCount++;
                 document.getElementById('debug-events').textContent = eventCount;
-                
-                const productId = card.dataset.productId;
-                const productName = card.querySelector('h3').textContent;
-                
-                console.log('[Amazoon] Product clicked:', productName);
-
-                try {
-                    await fetch(`${API_BASE}/rewardTag`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            reward: 1.0
-                        })
+                if (window.HtmlAI && window.HtmlAI.track) {
+                    window.HtmlAI.track('product_click', card.dataset.productId, {
+                        product_name: card.querySelector('h3').textContent
                     });
-                } catch (error) {
-                    console.error('[Amazoon] Failed to track:', error);
                 }
             });
-        });
-
-        // Track CTA
-        document.getElementById('hero-cta').addEventListener('click', async () => {
-            eventCount++;
-            document.getElementById('debug-events').textContent = eventCount;
-            
-            try {
-                await fetch(`${API_BASE}/rewardTag`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        reward: 2.0
-                    })
-                });
-            } catch (error) {
-                console.error('[FashionMart] Failed to track:', error);
-            }
         });
     </script>
 </body>

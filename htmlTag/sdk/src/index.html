@@ -1,90 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <title>AI Optimize Demo</title>
+    <meta charset="UTF-8">
+    <title>Demo</title>
 
-    <!-- Load your custom tag -->
-    <script src="./index.js?v=999"></script>
-
-    <style>
-        body {
-            font-family: system-ui, sans-serif;
-            padding: 40px;
-        }
-
-        .box {
-            padding: 24px;
-            background: #f4f4f4;
-            border-radius: 8px;
-        }
-
-        button {
-            padding: 10px 18px;
-            background: #007bff;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-        }
-    </style>
+    <!-- Load ONLY the ai-opt element -->
+    <script type="module" src="./AiOptimizeElement_v2.js"></script>
 </head>
 
 <body>
 
-    <h1>Adaptive Identity Demo</h1>
-    <p>Custom AI optimization tag demo.</p>
-
-    <div style="margin-bottom: 20px;">
-        <button id="test-tagAi" style="background: #28a745;">Test /tagAi API</button>
-        <span id="api-status" style="margin-left: 10px; color: #666;"></span>
-    </div>
-
-    <ai-optimize experiment="hero-cta">
-        <div class="box">
-            <h2>Welcome to my website</h2>
-            <p>This is the default hero section before optimization.</p>
-            <button>Click Me</button>
+    <ai-opt>
+        <div>
+            <h2>Hello World</h2>
+            <p>This content will be replaced by the backend variant.</p>
         </div>
-    </ai-optimize>
-
-    <br><br>
-
-    <ai-optimize experiment="pricing-block">
-        <div class="box">
-            <h3>Pricing</h3>
-            <p>Basic plan - $9/month</p>
-            <button>Upgrade</button>
-        </div>
-    </ai-optimize>
-
-    <script>
-        document.getElementById('test-tagAi').addEventListener('click', async () => {
-            const statusEl = document.getElementById('api-status');
-            statusEl.textContent = 'Setting variant...';
-            statusEl.style.color = '#666';
-
-            try {
-                // Step 1: Set the demo variant
-                const setRes = await fetch('http://localhost:8000/optimize/set-demo/hero-cta');
-                const setData = await setRes.json();
-                console.log('[test] Variant set:', setData);
-
-                // Step 2: Trigger immediate refresh on the element
-                const heroElement = document.querySelector('ai-optimize[experiment="hero-cta"]');
-                if (heroElement && heroElement.refresh) {
-                    heroElement.refresh();
-                }
-
-                statusEl.textContent = 'Variant applied!';
-                statusEl.style.color = '#28a745';
-            } catch (err) {
-                console.error('[test] Error:', err);
-                statusEl.textContent = 'Error: ' + err.message;
-                statusEl.style.color = '#dc3545';
-            }
-        });
-    </script>
+    </ai-opt>
 
 </body>
 </html>
