@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import random
 from openai import OpenAI
 import os
+import threading
 
 
 
@@ -83,16 +84,17 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
                 }
             }
         })
-        # 2. Now that user exists → generate variant B using RAG
-        new_b_html = AIRags(user_id, contextHtml, "B", "A")
+        # 2. Generate variant B in background thread (non-blocking)
+        def generate_variant_b():
+            new_b_html = AIRags(user_id, contextHtml, "B", "A")
+            users_collection.update_one(
+                {"user_id": user_id},
+                {"$set": {"variants.B.current_html": new_b_html}}
+            )
+            print(f"✅ Variant B generated for user {user_id}")
 
-        # 3. Save the newly generated B HTML back to MongoDB
-        users_collection.update_one(
-            {"user_id": user_id},
-            {"$set": {"variants.B.current_html": new_b_html}}
-        )
-
-
+        thread = threading.Thread(target=generate_variant_b)
+        thread.start()
 
         return {
             "status": "ok:new-user",
@@ -197,13 +199,15 @@ def ReRenderCheck(user_id: str, contextHtml: str):
     AHtml = user["variants"]["A"]["current_html"]
     BHtml = user["variants"]["B"]["current_html"]
 
-    # If A is outperforming B by threshold → regenerate B
+    # If A is outperforming B by threshold → regenerate B (in background)
     if AScore >= BScore + RERENDER_SCORE:
-        reRender(user_id, "B", "A", contextHtml=contextHtml, oldHtml=BHtml)
+        thread = threading.Thread(target=reRender, args=(user_id, "B", "A", contextHtml, BHtml))
+        thread.start()
 
-    # If B is outperforming A by threshold → regenerate A
+    # If B is outperforming A by threshold → regenerate A (in background)
     if BScore >= AScore + RERENDER_SCORE:
-        reRender(user_id, "A", "B", contextHtml=contextHtml, oldHtml=AHtml)
+        thread = threading.Thread(target=reRender, args=(user_id, "A", "B", contextHtml, AHtml))
+        thread.start()
 
     return True
 
@@ -311,25 +315,65 @@ def AIRags(
     # 🔥 Prompt for OpenAI
     # -------------------------
     prompt = f"""
-You are updating variant {varianceLetter} for an A/B testing system.
-The goal is to make **small improvements** based on the winning variant {opposingVariantLetter}.
+You are an A/B testing AI that optimizes HTML components for better conversion.
+You are updating variant {varianceLetter} to compete with the winning variant {opposingVariantLetter}.
 
-### Winning Variant ({opposingVariantLetter})
-HTML:
+### Winning Variant ({opposingVariantLetter}) - Score: {winning_score}
+```html
 {winning_html}
+```
 
-### Losing Variant ({varianceLetter})
-Current HTML:
+### Losing Variant ({varianceLetter}) - Needs Improvement
+```html
 {losing_html}
+```
 
-### Context HTML
-This is the larger page structure:
+### Page Context
+```html
 {contextHtml}
+```
 
-### Your Task
-Generate a **slightly improved HTML version** for variant {varianceLetter}.
-DO NOT drastically change layout. Make subtle UX / visual / clarity improvements.
-Return ONLY raw HTML — no explanations.
+### WHAT YOU CAN MODIFY (be creative within these bounds):
+
+**Text & Copy:**
+- Headlines (h1, h2, h3) - try different emotional hooks, urgency, benefits
+- Descriptions/paragraphs - shorter vs longer, feature-focused vs benefit-focused
+- Button text (CTAs) - action verbs, urgency words, value propositions
+- Badges/labels - "New", "Limited", "Best Seller", "Free Shipping", etc.
+
+**Typography & Styling (inline styles):**
+- Font sizes (larger headlines, smaller body, etc.)
+- Font weights (bold, semibold, normal)
+- Text colors (contrast, emphasis on key words)
+- Letter spacing, line height
+
+**Layout & Positioning (inline styles):**
+- Flexbox direction (row vs column)
+- Alignment (center, left, right)
+- Spacing (padding, margin, gap)
+- Element ordering (move CTA above/below text, reorder content)
+
+**Visual Emphasis:**
+- Background colors on sections
+- Border styles, border-radius
+- Box shadows for depth
+
+**Image Positioning (DO NOT resize images):**
+- Move image left/right of content (flex order)
+- Change image placement in the layout
+- DO NOT change image width, height, or src - keep original dimensions
+
+**Element Visibility:**
+- Show/hide secondary elements
+- Add urgency elements (limited stock, timer placeholder)
+- Add trust signals (ratings, reviews count)
+
+### RULES:
+1. Keep the same semantic structure (don't remove core elements)
+2. Use inline styles for all CSS changes
+3. Be bold - try something noticeably different from the losing variant
+4. Learn from what made the winning variant successful
+5. Return ONLY the raw HTML - no markdown, no explanations, no code blocks
 """
 
     # -------------------------

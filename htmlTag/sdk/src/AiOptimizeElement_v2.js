@@ -42,6 +42,19 @@ export class AiOpt extends HTMLElement {
             this.innerHTML = data.changingHtml;
             this.optimized = true;
 
+            // Expose current variant globally and update debug panel
+            window.currentVariant = data.variant;
+            const variantEl = document.getElementById('debug-variant');
+            if (variantEl) {
+                variantEl.textContent = data.variant || '--';
+            }
+
+            // Also update the reward button's variant attribute
+            const rewardBtn = document.getElementById('reward-btn');
+            if (rewardBtn && data.variant) {
+                rewardBtn.setAttribute('variant', data.variant);
+            }
+
         } catch (err) {
             console.error("🔥 ERROR:", err);
         }
