@@ -7,27 +7,21 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     id: 1,
-    title: "E-commerce Personalization",
-    description: "Product recommendations that adapt to browsing patterns",
-    placeholder: "Demo: Product cards morphing based on user interest",
+    title: "Business A - Shoes",
+    description: "E-commerce demo showcasing personalized shoe recommendations",
+    link: "http://localhost:8082/demo-business-a.html",
   },
   {
     id: 2,
-    title: "Content Adaptation",
-    description: "Headlines and copy that resonate with each visitor",
-    placeholder: "Demo: Dynamic headline variations in real-time",
+    title: "Business B - Clothes",
+    description: "Fashion store demo with adaptive clothing suggestions",
+    link: "http://localhost:8082/demo-business-b.html",
   },
   {
     id: 3,
-    title: "Navigation Intelligence",
-    description: "UI that reorganizes based on user behavior",
-    placeholder: "Demo: Menu items reordering by usage frequency",
-  },
-  {
-    id: 4,
-    title: "Form Optimization",
-    description: "Input fields that anticipate user needs",
-    placeholder: "Demo: Smart form field suggestions and ordering",
+    title: "Admin Dashboard",
+    description: "Manage and monitor your html.ai integrations",
+    link: "http://localhost:8081/",
   },
 ];
 
@@ -86,10 +80,15 @@ export default function Carousel() {
               }}
               className="absolute inset-0 flex flex-col items-center justify-center p-8"
             >
-              {/* Placeholder for GIF/Demo */}
-              <div className="w-full max-w-4xl aspect-video rounded-xl bg-gradient-to-br from-primary/20 via-secondary to-primary/10 border border-border flex items-center justify-center mb-6">
+              {/* Demo Link */}
+              <a
+                href={slides[current].link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full max-w-4xl aspect-video rounded-xl bg-gradient-to-br from-primary/20 via-secondary to-primary/10 border border-border flex items-center justify-center mb-6 hover:border-primary/50 transition-colors cursor-pointer group"
+              >
                 <div className="text-center p-8">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
                     <svg
                       className="w-8 h-8 text-primary"
                       fill="none"
@@ -100,21 +99,15 @@ export default function Carousel() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                       />
                     </svg>
                   </div>
-                  <p className="text-muted-foreground text-sm">
-                    {slides[current].placeholder}
+                  <p className="text-muted-foreground text-sm group-hover:text-foreground transition-colors">
+                    Click to open demo
                   </p>
                 </div>
-              </div>
+              </a>
 
               {/* Slide info */}
               <h3 className="text-2xl font-semibold mb-2">
