@@ -20,6 +20,7 @@ export class AiOpt extends HTMLElement {
             user_id: ids.user_id,
             changingHtml: this.originalHtml,
             contextHtml: contextHtml,
+
         };
 
         console.log("📤 Sending payload:", payload);

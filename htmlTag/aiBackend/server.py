@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import random
 from openai import OpenAI
 import os
+from datetime import datetime
 
 
 
@@ -227,11 +228,16 @@ def reRender(user_id: str, VariantLetter: str, opposingVariantLetter:str, contex
         raise Exception("testLetter must be 'A' or 'B'")
 
     # 1. Push oldHtml into the correct variant's history
+    # 1. Push oldHtml into the correct variant's history WITH timestamp + score
     mongodb["users"].update_one(
         {"user_id": user_id},
         {
             "$push": {
-                f"variants.{VariantLetter}.history": oldHtml
+                f"variants.{VariantLetter}.history": {
+                    "html": oldHtml,
+                    "score_before_reset": user["variants"][VariantLetter]["current_score"],
+                    "timestamp": datetime.utcnow().isoformat()
+                }
             }
         }
     )
