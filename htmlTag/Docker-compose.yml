@@ -1,4 +1,3 @@
-version: "3.9"
 
 # Load environment variables from .env file
 # Create a .env file with: GEMINI_API_KEY=your_key_here
@@ -16,7 +15,7 @@ services:
   engine:
     build:
       context: ./aiBackend
-      dockerfile: Dockerfile_integrated
+      dockerfile: Dockerfile
     container_name: adaptive_engine
     restart: always
     ports:

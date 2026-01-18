@@ -3,7 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
 import random
+from openai import OpenAI
+import os
 
+
+
+
+RERENDER_SCORE = 1
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 # ----------------------------------------
 # FastAPI App + CORS
 # ----------------------------------------
@@ -20,28 +28,30 @@ app.add_middleware(
 # ----------------------------------------
 # MongoDB
 # ----------------------------------------
-client = MongoClient("mongodb://mongo:27017/")  # works inside Docker
-mongodb = client["html_ai"]
+mongo_client = MongoClient("mongodb://mongo:27017/")  # works inside Docker
+mongodb = mongo_client["html_ai"]
 
 users_collection = mongodb["users"]  # collection
 
 
-users_collection.insert_one({
-            "user_id": "sultan",
-            "variants": {
-                "A": {
-                    "current_html": "<div>A</div>",
-                    "current_score": 4.3,
-                    "history": []
-                },
-
-                "B": {
-                    "current_html": "<div>B</div>",
-                    "current_score": 3.0,
-                    "history": []
-                }
+if not users_collection.find_one({"user_id": "sultan"}):
+    users_collection.insert_one({
+        "user_id": "sultan",
+        "variants": {
+            "A": {
+                "current_html": "<div>A</div>",
+                "current_score": 4.3,
+                "number_of_trials": 1,
+                "history": []
+            },
+            "B": {
+                "current_html": "<div>B</div>",
+                "current_score": 3,
+                "number_of_trials": 1,
+                "history": []
             }
-        })
+        }
+    })
 # ----------------------------------------
 # Payload Models
 # ----------------------------------------
@@ -78,12 +88,14 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
                 "A": {
                     "current_html": "<div>A</div>",
                     "current_score": 4.3,
+                    "number_of_trials": 1,
                     "history": []
                 },
 
                 "B": {
                     "current_html": "<div>B</div>", #TODO MUST BE DYNAMICs
                     "current_score": 3.0,
+                    "number_of_trials": 1,
                     "history": []
                 }
             }
@@ -91,7 +103,7 @@ def aiTag(user_id: str, changingHtml: str, contextHtml: str):
         print("insert")
 
         return {
-            "status": "ok",
+            "status": "ok:new-user",
             "changingHtml": "<div>A</div>",
             "variant": "A"
         }
@@ -132,7 +144,7 @@ def does_user_exists(user_id: str) -> bool:
     return False  # user was created now
 
 
-RERENDER_SCORE = 5
+
 # ----------------------------------------
 # Logic: rewardTag
 # ----------------------------------------
@@ -141,6 +153,8 @@ def rewardTag(user_id: str, reward: float, contextHtml: str, variantAttributed: 
     Store a reward value mapped to the given user.
     """
     ReRenderCheck(user_id, contextHtml)
+    implementScore(user_id, variantAttributed, reward)
+
 
     return {
         "status": "reward_logged",
@@ -148,6 +162,35 @@ def rewardTag(user_id: str, reward: float, contextHtml: str, variantAttributed: 
         "reward": reward
     }
 
+
+
+def implementScore(user_id: str, variant: str, reward: float):
+    variant = variant.upper()
+
+    # Get the current user entry
+    user = mongodb["users"].find_one({"user_id": user_id})
+    if not user:
+        return "User not found"
+
+    variant_data = user["variants"][variant]
+
+    old_score = variant_data["current_score"]
+    old_trials = variant_data["number_of_trials"]
+
+    # Compute new average score
+    new_trials = old_trials + 1
+    new_score = (old_score * old_trials + reward) / new_trials
+
+    # Update MongoDB
+    mongodb["users"].update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                f"variants.{variant}.current_score": new_score,
+                f"variants.{variant}.number_of_trials": new_trials
+            }
+        }
+    )
 
 
 
@@ -164,17 +207,17 @@ def ReRenderCheck(user_id: str, contextHtml: str):
 
     # If A is outperforming B by threshold → regenerate B
     if AScore >= BScore + RERENDER_SCORE:
-        reRender(user_id, "B", contextHtml, oldHtml=BHtml)
+        reRender(user_id, "B", "A", contextHtml=contextHtml, oldHtml=BHtml)
 
     # If B is outperforming A by threshold → regenerate A
     if BScore >= AScore + RERENDER_SCORE:
-        reRender(user_id, "A", contextHtml, oldHtml=AHtml)
+        reRender(user_id, "A", "B", contextHtml=contextHtml, oldHtml=AHtml)
 
     return True
 
 
 
-def reRender(user_id: str, varianceLetter: str, contextHtml: str, oldHtml: str):
+def reRender(user_id: str, VariantLetter: str, opposingVariantLetter:str, contextHtml: str, oldHtml: str):
     """
     testLetter: "A" or "B"
     oldHtml: the previous HTML before updating
@@ -185,10 +228,10 @@ def reRender(user_id: str, varianceLetter: str, contextHtml: str, oldHtml: str):
         return "User not found"
 
     # Make sure testLetter is uppercase
-    varianceLetter = varianceLetter.upper()
+    VariantLetter = VariantLetter.upper()
 
     # Safety check
-    if varianceLetter not in ["A", "B"]:
+    if VariantLetter not in ["A", "B"]:
         raise Exception("testLetter must be 'A' or 'B'")
 
     # 1. Push oldHtml into the correct variant's history
@@ -196,13 +239,13 @@ def reRender(user_id: str, varianceLetter: str, contextHtml: str, oldHtml: str):
         {"user_id": user_id},
         {
             "$push": {
-                f"variants.{varianceLetter}.history": oldHtml
+                f"variants.{VariantLetter}.history": oldHtml
             }
         }
     )
 
     # 2. Now generate NEW HTML (stubbed for now)
-    new_html = AIRags(user_id, contextHtml, varianceLetter)
+    new_html = AIRags(user_id, contextHtml, VariantLetter, opposingVariantLetter)
 
 
     # 3. Store the new HTML in current_html
@@ -210,20 +253,79 @@ def reRender(user_id: str, varianceLetter: str, contextHtml: str, oldHtml: str):
         {"user_id": user_id},
         {
             "$set": {
-                f"variants.{varianceLetter}.current_html": new_html
+                f"variants.{VariantLetter}.current_html": new_html
             }
         }
     )
 
     print(mongodb["users"].find_one({"user_id": user_id}))
 
-def AIRags(user_id:str, changingHtml: str, contextHtml: str, varianceLetter: str) -> str:
+def AIRags(
+    user_id: str,
+    contextHtml: str,
+    varianceLetter: str,
+    opposingVariantLetter: str
+) -> str:
+    """
+    Regenerate the HTML for the losing variant using:
+    - Current variant HTML that needs updating
+    - Opposing variant's HTML (the winning one)
+    - Context HTML (surrounding structure)
+    """
 
+    print("RAG RAN!!!")
+    # Fetch user + opposing HTML + score
+    user = mongodb["users"].find_one({"user_id": user_id})
+    if not user:
+        return "<div>Error: user not found</div>"
 
+    losing_html = user["variants"][varianceLetter]["current_html"]
+    winning_variant = user["variants"][opposingVariantLetter]
 
-    #TODO AI....  HUHH UHHH I LOVE AI AND BUILDING AND ALSO AI... (randomly screens) (mutters ai)
-    return f"<div>New version for {varianceLetter}</div>"
+    winning_html = user["variants"][opposingVariantLetter]["current_html"]
+    winning_score = user["variants"][opposingVariantLetter]["current_score"]
 
+    # -------------------------
+    # 🔥 Prompt for OpenAI
+    # -------------------------
+    prompt = f"""
+You are updating variant {varianceLetter} for an A/B testing system.
+The goal is to make **small improvements** based on the winning variant {opposingVariantLetter}.
+
+### Winning Variant ({opposingVariantLetter})
+HTML:
+{winning_html}
+
+### Losing Variant ({varianceLetter})
+Current HTML:
+{losing_html}
+
+### Context HTML
+This is the larger page structure:
+{contextHtml}
+
+### Your Task
+Generate a **slightly improved HTML version** for variant {varianceLetter}.
+DO NOT drastically change layout. Make subtle UX / visual / clarity improvements.
+Return ONLY raw HTML — no explanations.
+"""
+
+    # -------------------------
+    # 🔥 Call OpenAI
+    # -------------------------
+    response = client.responses.create(
+        model="gpt-5.2",
+        input=prompt
+    )
+
+    ai_changed_html = response.output_text.strip()
+
+    # -------------------------
+    # Return the new HTML
+    # (DO NOT save score here — reRender() will handle saving)
+    # -------------------------
+    print("ai_changed_html: ", ai_changed_html)
+    return ai_changed_html
 
 
 # ----------------------------------------
