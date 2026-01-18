@@ -41,19 +41,19 @@ export default function ArchitecturePage() {
 
         <div className="space-y-4">
           {[
-            { icon: Database, name: "MongoDB", port: "27017", desc: "Primary database with persistent storage", color: "emerald" },
-            { icon: Server, name: "AI Backend", port: "3000", desc: "FastAPI app with multi-agent AI system", color: "blue" },
-            { icon: Globe, name: "Tracking Service", port: "3001", desc: "Cross-site identity sync domain", color: "purple" },
-            { icon: Box, name: "SDK Server", port: "8080", desc: "Nginx serving JavaScript SDK files", color: "amber" },
-            { icon: BarChart3, name: "Dashboard", port: "8081", desc: "Admin UI for analytics and config", color: "cyan" },
-            { icon: Store, name: "Demo Store", port: "8082", desc: "Example e-commerce integration", color: "pink" },
-            { icon: Megaphone, name: "Marketing", port: "4000", desc: "Next.js landing page and docs", color: "rose" },
+            { icon: Database, name: "MongoDB", port: "27017", desc: "Primary database with persistent storage" },
+            { icon: Server, name: "AI Backend", port: "3000", desc: "FastAPI app with multi-agent AI system" },
+            { icon: Globe, name: "Tracking Service", port: "3001", desc: "Cross-site identity sync domain" },
+            { icon: Box, name: "SDK Server", port: "8080", desc: "Nginx serving JavaScript SDK files" },
+            { icon: BarChart3, name: "Dashboard", port: "8081", desc: "Admin UI for analytics and config" },
+            { icon: Store, name: "Demo Store", port: "8082", desc: "Example e-commerce integration" },
+            { icon: Megaphone, name: "Marketing", port: "4000", desc: "Next.js landing page and docs" },
           ].map((service) => {
             const Icon = service.icon;
             return (
               <div key={service.name} className="glass rounded-xl p-5 border border-border/50 flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-lg bg-${service.color}-500/20 flex items-center justify-center flex-shrink-0`}>
-                  <Icon className={`text-${service.color}-400`} size={20} />
+                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <Icon className="text-muted-foreground" size={20} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
