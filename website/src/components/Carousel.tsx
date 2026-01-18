@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const slides = [
@@ -28,18 +28,32 @@ const slides = [
 export default function Carousel() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const getSlideIndex = (offset: number) => {
     return (current + offset + slides.length) % slides.length;
   };
 
-  const paginate = (newDirection: number) => {
+  const paginate = useCallback((newDirection: number) => {
     setDirection(newDirection);
     setCurrent((prev) => (prev + newDirection + slides.length) % slides.length);
-  };
+  }, []);
+
+  // Auto-rotate every 4 seconds (clockwise)
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      paginate(-1);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isPaused, paginate]);
 
   return (
-    <div className="relative py-8">
+    <div 
+      className="relative py-8"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Cards container */}
       <div className="flex items-center justify-center gap-4 lg:gap-8 px-4">
         {/* Left card */}
